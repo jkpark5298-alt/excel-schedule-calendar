@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 근무표 캘린더 (iPhone Web App)
 
-## Getting Started
+Excel 근무표를 업로드하면 **일요일 시작 주간 캘린더**로 표시하는 iPhone 친화형 웹앱입니다.
 
-First, run the development server:
+## 기능
+
+- Excel(.xlsx/.xls) 근무표 파싱 (박종규 등 대상자 지정)
+- C/A/당/休 색상, 👍 리더, 동료 근무자 표시
+- **2026년 1월 ~ 2029년 3월** 월별 저장 (localStorage)
+- PDF 저장, Google Calendar 연동
+- PWA: iPhone 홈 화면에 추가 가능
+
+## 로컬 실행
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## iPhone에서 사용
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Safari로 Vercel URL 접속
+2. 공유 → **홈 화면에 추가**
 
-## Learn More
+## 배포
 
-To learn more about Next.js, take a look at the following resources:
+GitHub push 후 Vercel에서 Import:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Framework: Next.js
+- Root: `excel-schedule-calendar`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Google Calendar (선택)
 
-## Deploy on Vercel
+`.env.local`:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=https://your-domain.vercel.app/api/google-calendar/callback
+```
