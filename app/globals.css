@@ -113,24 +113,23 @@ body {
 .week-row {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 6px;
-  min-height: 120px;
+  gap: 4px;
 }
 
 .week-cell {
-  min-height: 110px;
+  aspect-ratio: 1;
+  min-height: 0;
 }
 
 .week-cell .day-card {
   height: 100%;
-  min-height: 110px;
 }
 
 .week-cell-empty {
   background: #0f172a;
   border: 1px dashed #1e293b;
-  border-radius: 12px;
-  min-height: 110px;
+  border-radius: 8px;
+  aspect-ratio: 1;
 }
 
 .week-cell-filtered {
@@ -157,8 +156,6 @@ body {
 
 @media (max-width: 900px) {
   .week-header-cell { font-size: 11px; padding: 6px 2px; }
-  .week-row { min-height: 100px; }
-  .week-cell, .week-cell-empty, .week-cell .day-card { min-height: 95px; }
 }
 
 @media (max-width: 640px) {
@@ -644,9 +641,158 @@ body {
 }
 
 @media (max-width: 640px) {
-  .week-calendar { padding-bottom: 8px; }
-  .week-header, .week-row { min-width: unset; }
-  .week-row { min-height: 90px; }
-  .week-cell, .week-cell-empty, .week-cell .day-card { min-height: 85px; }
-  .day-card-compact { padding: 8px; }
+  .week-calendar { padding: 0 4px 8px; }
+  .week-header { gap: 3px; margin-bottom: 4px; }
+  .week-header-cell { font-size: 10px; padding: 4px 0; border-radius: 6px; }
+  .week-row { gap: 3px; margin-bottom: 3px; }
+  .iphone-schedule-body { padding: 8px 6px; }
+  .iphone-toolbar-compact { flex-direction: column; align-items: stretch; }
+  .iphone-stats { justify-content: center; gap: 8px; font-size: 12px; }
+  .iphone-toolbar-btns { justify-content: center; }
 }
+
+/* Compact day cell (iPhone week grid) */
+.compact-day-cell {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 4px 3px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s;
+  overflow: hidden;
+  min-height: 0;
+}
+.compact-day-cell:active { background: #273549; }
+.compact-day-cell.rest { opacity: 0.5; }
+
+.compact-day-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2px;
+  margin-bottom: 2px;
+}
+
+.compact-day-date {
+  font-size: 11px;
+  font-weight: 800;
+  color: #f1f5f9;
+  line-height: 1;
+}
+
+.compact-day-shift {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.compact-leader { font-size: 9px; }
+
+.compact-day-coworkers {
+  font-size: 8px;
+  font-weight: 600;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.9;
+}
+
+.compact-day-related {
+  font-size: 7px;
+  margin-top: 1px;
+  opacity: 0.75;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Saved badge + pin help */
+.iphone-saved-badge {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 11px;
+  color: #86efac;
+  background: rgba(5, 150, 105, 0.12);
+  border: 1px solid rgba(5, 150, 105, 0.3);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+}
+
+.iphone-saved-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  flex-shrink: 0;
+}
+
+.iphone-saved-help {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #0a84ff;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.day-detail-modal {
+  background: #1c1c1e;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 360px;
+  margin: auto 16px;
+  overflow: hidden;
+}
+
+.day-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  border-bottom: 1px solid #2c2c2e;
+}
+
+.day-detail-date { font-size: 22px; font-weight: 800; color: #fff; margin-right: 8px; }
+.day-detail-dow { font-size: 14px; color: #8e8e93; }
+
+.day-detail-body { padding: 16px 18px; }
+.day-detail-shift { margin-bottom: 16px; }
+.day-detail-section { margin-bottom: 14px; }
+.day-detail-label { font-size: 12px; color: #8e8e93; margin: 0 0 4px; }
+.day-detail-text { font-size: 15px; color: #e2e8f0; margin: 0; line-height: 1.5; }
+
+.day-detail-actions {
+  display: flex;
+  gap: 10px;
+  padding: 12px 18px 18px;
+  border-top: 1px solid #2c2c2e;
+}
+
+.pin-help-modal {
+  background: #1c1c1e;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 380px;
+  margin: auto 16px;
+  padding: 20px;
+}
+.pin-help-modal h3 { font-size: 17px; font-weight: 700; color: #fff; margin: 0 0 16px; }
+.pin-help-list { list-style: none; padding: 0; margin: 0 0 20px; }
+.pin-help-list li { margin-bottom: 16px; }
+.pin-help-list strong { display: block; color: #0a84ff; font-size: 14px; margin-bottom: 4px; }
+.pin-help-list p { font-size: 13px; color: #94a3b8; margin: 0; line-height: 1.5; }
+.pin-help-sub { font-size: 12px !important; color: #64748b !important; margin-top: 4px !important; }

@@ -2,12 +2,11 @@
 
 import { DaySchedule } from "@/types/schedule";
 import { groupDaysIntoWeeks, WEEKDAYS } from "@/lib/groupWeeks";
-import DayCard from "./DayCard";
+import CompactDayCell from "./CompactDayCell";
 
 interface Props {
   days: DaySchedule[];
-  onEdit?: (day: DaySchedule) => void;
-  /** When set, only matching days show content; others render empty cells */
+  onDayClick?: (day: DaySchedule) => void;
   filterShift?: string;
 }
 
@@ -25,18 +24,14 @@ function matchesFilter(day: DaySchedule, filterShift: string): boolean {
   return shiftGroup(day.myShift) === filterShift;
 }
 
-export default function WeekCalendar({ days, onEdit, filterShift = "전체" }: Props) {
+export default function WeekCalendar({ days, onDayClick, filterShift = "전체" }: Props) {
   const weeks = groupDaysIntoWeeks(days);
 
   return (
     <div className="week-calendar">
-      {/* Header: 일 ~ 토 */}
       <div className="week-header">
         {WEEKDAYS.map((dow, i) => (
-          <div
-            key={dow}
-            className={`week-header-cell ${i === 0 ? "week-header-sun" : i === 6 ? "week-header-sat" : ""}`}
-          >
+          <div key={dow} className={`week-header-cell ${i === 0 ? "week-header-sun" : i === 6 ? "week-header-sat" : ""}`}>
             {dow}
           </div>
         ))}
@@ -48,8 +43,7 @@ export default function WeekCalendar({ days, onEdit, filterShift = "전체" }: P
             if (!day) {
               return <div key={`empty-${wi}-${di}`} className="week-cell week-cell-empty" />;
             }
-            const visible = matchesFilter(day, filterShift);
-            if (!visible) {
+            if (!matchesFilter(day, filterShift)) {
               return (
                 <div key={day.orderIndex} className="week-cell week-cell-empty week-cell-filtered">
                   <span className="week-cell-date-muted">{day.date}</span>
@@ -58,7 +52,7 @@ export default function WeekCalendar({ days, onEdit, filterShift = "전체" }: P
             }
             return (
               <div key={day.orderIndex} className="week-cell">
-                <DayCard day={day} onEdit={onEdit} compact />
+                <CompactDayCell day={day} onClick={() => onDayClick?.(day)} />
               </div>
             );
           })}

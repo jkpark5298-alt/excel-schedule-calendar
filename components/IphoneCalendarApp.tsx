@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ParsedSchedule } from "@/types/schedule";
 import {
   StoredCalendarData, canGoNext, canGoPrev, clampToRange, deleteScheduleForMonth,
-  listStoredMonths, monthKey, readStoredCalendar, saveScheduleForMonth, shiftMonth, writeStoredCalendar,
+  downloadBackup, importBackupJson, listStoredMonths, loadStoredCalendar, monthKey,
+  saveScheduleForMonth, shiftMonth, writeStoredCalendar,
 } from "@/lib/scheduleStorage";
 import MonthNavigator from "./MonthNavigator";
 import UploadModal from "./UploadModal";
@@ -22,7 +23,7 @@ export default function IphoneCalendarApp() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    setStored(readStoredCalendar());
+    void loadStoredCalendar().then(setStored);
     setHydrated(true);
   }, []);
 
@@ -72,6 +73,21 @@ export default function IphoneCalendarApp() {
     setStored((prev) => deleteScheduleForMonth(prev, year, month));
   }, [year, month]);
 
+  const handleRestore = useCallback(async (file: File) => {
+    try {
+      const text = await file.text();
+      const next = importBackupJson(text);
+      setStored(next);
+      alert(`복원 완료: ${listStoredMonths(next).length}개월`);
+    } catch (e) {
+      alert(String(e));
+    }
+  }, []);
+
+  const handleBackup = useCallback(() => {
+    downloadBackup(stored);
+  }, [stored]);
+
   const handleTargetNameChange = useCallback((name: string) => {
     setStored((prev) => {
       const next = { ...prev, targetName: name };
@@ -104,6 +120,8 @@ export default function IphoneCalendarApp() {
           onScheduleUpdate={handleScheduleUpdate}
           onDelete={handleDeleteMonth}
           onReupload={() => setShowUpload(true)}
+          onBackup={handleBackup}
+          onRestore={handleRestore}
         />
       ) : (
         <EmptyScheduleView
