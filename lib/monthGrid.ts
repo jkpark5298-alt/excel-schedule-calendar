@@ -19,6 +19,12 @@ function getWeekNumber(year: number, month: number, day: number): number {
   return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
+function cellAbsoluteDate(cell: MonthCell, year: number, month: number): Date {
+  if (cell.inMonth) return new Date(year, month - 1, cell.date);
+  if (cell.date > 20) return new Date(year, month - 2, cell.date);
+  return new Date(year, month, cell.date);
+}
+
 /** Build iOS-style month grid (Sun start) with schedule mapped to cells */
 export function buildMonthGrid(
   year: number,
@@ -31,40 +37,6 @@ export function buildMonthGrid(
   const startPad = first.getDay();
   const prevMonthDays = new Date(year, month - 1, 0).getDate();
 
-  const pool = days.map((d, i) => ({ d, i }));
-  const used = new Set<number>();
-
-  function takeSchedule(date: number, dow: string, inMonth: boolean): DaySchedule | null {
-    // Prefer exact date + dayOfWeek match
-    let idx = pool.findIndex(({ d, i }) => !used.has(i) && d.date === date && d.dayOfWeek === dow);
-    if (idx >= 0) {
-      used.add(pool[idx].i);
-      return pool[idx].d;
-    }
-    // Prev-month overflow: sheet day 30/31 in leading cells
-    if (!inMonth) {
-      idx = pool.findIndex(({ d, i }) => !used.has(i) && d.date === date);
-      if (idx >= 0) {
-        used.add(pool[idx].i);
-        return pool[idx].d;
-      }
-    }
-    // Current month: match by date if only one unused with that date
-    if (inMonth) {
-      const candidates = pool.filter(({ d, i }) => !used.has(i) && d.date === date);
-      if (candidates.length === 1) {
-        used.add(candidates[0].i);
-        return candidates[0].d;
-      }
-      idx = pool.findIndex(({ d, i }) => !used.has(i) && d.date === date);
-      if (idx >= 0) {
-        used.add(pool[idx].i);
-        return pool[idx].d;
-      }
-    }
-    return null;
-  }
-
   const flat: MonthCell[] = [];
 
   for (let i = startPad - 1; i >= 0; i--) {
@@ -76,7 +48,7 @@ export function buildMonthGrid(
       date,
       inMonth: false,
       dayOfWeek: dow,
-      schedule: takeSchedule(date, dow, false),
+      schedule: null,
       isToday: !!(today && today.year === year && today.month === month - 1 && today.day === date),
     });
   }
@@ -88,7 +60,7 @@ export function buildMonthGrid(
       date: d,
       inMonth: true,
       dayOfWeek: dow,
-      schedule: takeSchedule(d, dow, true),
+      schedule: null,
       isToday: !!(today && today.year === year && today.month === month && today.day === d),
     });
   }
@@ -102,19 +74,19 @@ export function buildMonthGrid(
       date: nextDate,
       inMonth: false,
       dayOfWeek: dow,
-      schedule: takeSchedule(nextDate, dow, false),
+      schedule: null,
       isToday: false,
     });
     nextDate++;
   }
 
-  // Assign any remaining schedule entries to best matching unused cells
-  for (const { d, i } of pool) {
-    if (used.has(i)) continue;
-    const target = flat.find(
-      (c) => !c.schedule && c.date === d.date && c.dayOfWeek === d.dayOfWeek,
+  // Map each schedule entry to cell by date + dayOfWeek (handles duplicate date 30)
+  const sorted = [...days].sort((a, b) => a.orderIndex - b.orderIndex);
+  for (const day of sorted) {
+    const cell = flat.find(
+      (c) => !c.schedule && c.date === day.date && c.dayOfWeek === day.dayOfWeek,
     );
-    if (target) target.schedule = d;
+    if (cell) cell.schedule = day;
   }
 
   const weeks: MonthCell[][] = [];
@@ -122,10 +94,9 @@ export function buildMonthGrid(
   for (let i = 0; i < flat.length; i += 7) {
     const week = flat.slice(i, i + 7);
     weeks.push(week);
-    const ref = week.find((c) => c.inMonth) || week[0];
-    const refYear = ref.inMonth ? year : ref.date > 20 ? year : month === 1 ? year - 1 : year;
-    const refMonth = ref.inMonth ? month : ref.date > 20 ? month - 1 : month;
-    weekNumbers.push(getWeekNumber(refYear, refMonth, ref.date));
+    const sunday = week[0];
+    const abs = cellAbsoluteDate(sunday, year, month);
+    weekNumbers.push(getWeekNumber(abs.getFullYear(), abs.getMonth() + 1, abs.getDate()));
   }
 
   return { weeks, weekNumbers };

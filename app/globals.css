@@ -192,6 +192,13 @@ body {
   min-height: 100vh;
   max-width: 100vw;
   overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.iphone-schedule-body {
+  padding: 12px;
+  padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
 }
 
 .iphone-nav {
@@ -254,8 +261,6 @@ body {
 .iphone-nav-title { font-size: 20px; font-weight: 700; color: #fff; margin: 0; }
 .iphone-nav-sub { font-size: 12px; color: #8e8e93; margin: 2px 0 0; }
 
-.iphone-schedule-body { padding: 12px; }
-
 .iphone-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -263,14 +268,6 @@ body {
   align-items: center;
   gap: 8px;
   margin-bottom: 10px;
-}
-
-.iphone-stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-size: 13px;
-  font-weight: 600;
 }
 
 .iphone-toolbar-btns { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -801,8 +798,8 @@ body {
 .ios-month-wrap {
   background: #fff;
   border-radius: 12px;
-  overflow: hidden;
-  margin: 0 4px;
+  overflow: visible;
+  margin: 0 4px 8px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
 }
 
@@ -812,6 +809,8 @@ body {
   align-items: baseline;
   padding: 10px 14px 6px;
   border-bottom: 1px solid #e5e5ea;
+  border-radius: 12px 12px 0 0;
+  background: #fff;
 }
 
 .ios-month-title-left {
@@ -826,37 +825,39 @@ body {
   color: #000;
 }
 
-.ios-month-grid-wrap {
+.ios-month-grid {
   display: flex;
+  flex-direction: column;
+  border-radius: 0 0 12px 12px;
+  overflow: hidden;
+  background: #fff;
 }
 
-.ios-weeknum-col {
-  width: 22px;
-  flex-shrink: 0;
-  border-right: 1px solid #e5e5ea;
+.ios-week-row-with-wn {
+  display: grid;
+  grid-template-columns: 22px repeat(7, 1fr);
+  border-bottom: 1px solid #e5e5ea;
+  align-items: stretch;
+}
+.ios-week-row-with-wn:last-child { border-bottom: none; }
+
+.ios-dow-header-row {
   background: #fafafa;
 }
 
-.ios-weeknum-header { height: 28px; }
 .ios-weeknum {
-  height: 72px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 4px;
+  padding-top: 6px;
   font-size: 10px;
   color: #8e8e93;
   font-weight: 500;
-}
-
-.ios-month-grid-main { flex: 1; min-width: 0; }
-
-.ios-dow-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  border-bottom: 1px solid #e5e5ea;
   background: #fafafa;
+  border-right: 1px solid #e5e5ea;
 }
+
+.ios-weeknum-header { min-height: 28px; }
 
 .ios-dow {
   text-align: center;
@@ -864,28 +865,24 @@ body {
   font-weight: 600;
   color: #8e8e93;
   padding: 6px 0;
+  border-right: 1px solid #e5e5ea;
 }
+.ios-dow:last-child { border-right: none; }
 .ios-dow.sun { color: #ff3b30; }
 .ios-dow.sat { color: #007aff; }
 
-.ios-week-row {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  border-bottom: 1px solid #e5e5ea;
-}
-.ios-week-row:last-child { border-bottom: none; }
-
 .ios-day-cell {
-  min-height: 72px;
+  min-height: 88px;
   border: none;
   border-right: 1px solid #e5e5ea;
   background: #fff;
-  padding: 2px 2px 3px;
+  padding: 2px 2px 4px;
   text-align: left;
   cursor: default;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: visible;
+  align-self: stretch;
 }
 .ios-day-cell:last-child { border-right: none; }
 .ios-day-cell:disabled { cursor: default; }
@@ -932,7 +929,8 @@ body {
   flex-direction: column;
   gap: 1px;
   margin-top: 1px;
-  overflow: hidden;
+  overflow: visible;
+  min-height: 0;
 }
 
 .ios-skd-pill {
@@ -1058,7 +1056,6 @@ body {
 }
 
 @media (max-width: 640px) {
-  .ios-weeknum { height: 68px; }
-  .ios-day-cell { min-height: 68px; }
+  .ios-day-cell { min-height: 80px; }
   .ios-skd-pill { font-size: 8px; }
 }

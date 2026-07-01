@@ -31,65 +31,58 @@ export default function IosMonthCalendar({ year, month, days, selected, onSelect
         <span className="ios-month-title-right">{year}</span>
       </div>
 
-      <div className="ios-month-grid-wrap">
-        <div className="ios-weeknum-col">
-          <div className="ios-weeknum-header" />
-          {weekNumbers.map((wn, i) => (
-            <div key={i} className="ios-weeknum">{wn}</div>
-          ))}
-        </div>
-
-        <div className="ios-month-grid-main">
-          <div className="ios-dow-row">
-            {DOW_KO.map((dow, i) => (
-              <div key={dow} className={`ios-dow ${i === 0 ? "sun" : i === 6 ? "sat" : ""}`}>
-                {dow}
-              </div>
-            ))}
-          </div>
-
-          {weeks.map((week, wi) => (
-            <div key={wi} className="ios-week-row">
-              {week.map((cell) => {
-                const hasSkd = !!cell.schedule;
-                const sel = isSelected(cell);
-                return (
-                  <button
-                    key={cell.key}
-                    type="button"
-                    className={[
-                      "ios-day-cell",
-                      !cell.inMonth ? "out-month" : "",
-                      cell.isToday ? "today" : "",
-                      sel ? "selected" : "",
-                      hasSkd ? "has-skd" : "",
-                    ].filter(Boolean).join(" ")}
-                    onClick={() => { if (cell.schedule) onSelect(cell.schedule); }}
-                    disabled={!hasSkd}
-                  >
-                    <span className={`ios-day-num ${cell.isToday ? "today-num" : ""}`}>
-                      {cell.date}
-                    </span>
-                    <div className="ios-day-events">
-                      {cell.schedule && (
-                        <>
-                          <div className={`ios-skd-pill ${skdPillClass(cell.schedule.myShift)}`}>
-                            {skdPillLabel(cell.schedule)}
-                          </div>
-                          {cell.schedule.relatedCoworkers && cell.schedule.relatedCoworkers.names.length > 0 && (
-                            <div className={`ios-skd-pill ios-skd-pill-sub ${skdPillClass(cell.schedule.relatedCoworkers.type)}`}>
-                              {cell.schedule.relatedCoworkers.label}
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
+      <div className="ios-month-grid">
+        <div className="ios-week-row-with-wn ios-dow-header-row">
+          <div className="ios-weeknum ios-weeknum-header" />
+          {DOW_KO.map((dow, i) => (
+            <div key={dow} className={`ios-dow ${i === 0 ? "sun" : i === 6 ? "sat" : ""}`}>
+              {dow}
             </div>
           ))}
         </div>
+
+        {weeks.map((week, wi) => (
+          <div key={wi} className="ios-week-row-with-wn">
+            <div className="ios-weeknum">{weekNumbers[wi]}</div>
+            {week.map((cell) => {
+              const hasSkd = !!cell.schedule;
+              const sel = isSelected(cell);
+              return (
+                <button
+                  key={cell.key}
+                  type="button"
+                  className={[
+                    "ios-day-cell",
+                    !cell.inMonth ? "out-month" : "",
+                    cell.isToday ? "today" : "",
+                    sel ? "selected" : "",
+                    hasSkd ? "has-skd" : "",
+                  ].filter(Boolean).join(" ")}
+                  onClick={() => { if (cell.schedule) onSelect(cell.schedule); }}
+                  disabled={!hasSkd}
+                >
+                  <span className={`ios-day-num ${cell.isToday ? "today-num" : ""}`}>
+                    {cell.date}
+                  </span>
+                  <div className="ios-day-events">
+                    {cell.schedule && (
+                      <>
+                        <div className={`ios-skd-pill ${skdPillClass(cell.schedule.myShift)}`}>
+                          {skdPillLabel(cell.schedule)}
+                        </div>
+                        {cell.schedule.relatedCoworkers && cell.schedule.relatedCoworkers.names.length > 0 && (
+                          <div className={`ios-skd-pill ios-skd-pill-sub ${skdPillClass(cell.schedule.relatedCoworkers.type)}`}>
+                            {cell.schedule.relatedCoworkers.label}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        ))}
       </div>
     </div>
   );
