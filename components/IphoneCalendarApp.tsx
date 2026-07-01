@@ -9,6 +9,7 @@ import {
 import MonthNavigator from "./MonthNavigator";
 import UploadModal from "./UploadModal";
 import ScheduleView from "./ScheduleView";
+import EmptyScheduleView from "./EmptyScheduleView";
 
 export default function IphoneCalendarApp() {
   const now = new Date();
@@ -105,34 +106,14 @@ export default function IphoneCalendarApp() {
           onReupload={() => setShowUpload(true)}
         />
       ) : (
-        <div className="iphone-empty">
-          <div className="iphone-empty-icon">📅</div>
-          <h2>{year}년 {month}월 근무표 없음</h2>
-          <p>Excel 근무표를 업로드하면 주간 캘린더로 표시됩니다.</p>
-          <button type="button" className="btn btn-primary" onClick={() => setShowUpload(true)}>
-            Excel 업로드
-          </button>
-          {storedMonths.length > 0 && (
-            <div className="iphone-stored-months">
-              <p className="iphone-stored-label">저장된 월</p>
-              <div className="iphone-stored-chips">
-                {storedMonths.map((key) => {
-                  const [y, m] = key.split("-");
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      className="iphone-stored-chip"
-                      onClick={() => { setYear(Number(y)); setMonth(Number(m)); }}
-                    >
-                      {y}년 {Number(m)}월
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+        <EmptyScheduleView
+          year={year}
+          month={month}
+          targetName={stored.targetName}
+          storedMonths={storedMonths}
+          onUpload={() => setShowUpload(true)}
+          onSelectMonth={(y, m) => { setYear(y); setMonth(m); }}
+        />
       )}
 
       {showUpload && (
