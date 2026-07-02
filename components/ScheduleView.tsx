@@ -3,7 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ParsedSchedule, DaySchedule } from "@/types/schedule";
 import { DOW_KO } from "@/lib/monthGrid";
-import { isBoardingSchedule } from "@/lib/shiftDisplay";
+import { isBoardingSchedule, parseLeaderDateInput } from "@/lib/shiftDisplay";
 import IosMonthCalendar from "./IosMonthCalendar";
 import EditDayModal from "./EditDayModal";
 import DaySkdPanel from "./DaySkdPanel";
@@ -79,19 +79,28 @@ export default function ScheduleView({
   }, [isLocked]);
 
   const handleApplyLeaderDate = useCallback(() => {
-    const d = Number(leaderDateInput);
-    if (!Number.isFinite(d) || d < 1 || d > 31) {
-      alert("1~31 사이 날짜를 입력해 주세요.");
+    const dates = parseLeaderDateInput(leaderDateInput);
+    if (dates.length === 0) {
+      alert("1~31 사이 날짜를 쉼표로 입력해 주세요. (예: 1,3,5)");
       return;
     }
-    const target = days.find(day => day.date === d);
-    if (!target) {
-      alert(`${d}일 일정이 없습니다. 먼저 일정을 추가하거나 업로드해 주세요.`);
+    const missing = dates.filter((d) => !days.some((day) => day.date === d));
+    if (missing.length > 0) {
+      alert(`${missing.join(", ")}일 일정이 없습니다. 먼저 일정을 추가하거나 업로드해 주세요.`);
       return;
     }
-    persist(days.map(day => day.orderIndex === target.orderIndex ? { ...day, isLeader: true } : day));
+    const leaderIndexes = new Set(
+      dates.map((d) => days.find((day) => day.date === d)!.orderIndex),
+    );
+    const nextDays = days.map((day) => ({
+      ...day,
+      isLeader: leaderIndexes.has(day.orderIndex),
+    }));
+    persist(nextDays);
     setLeaderDateInput("");
-    setSelectedDay({ ...target, isLeader: true });
+    const lastDate = dates[dates.length - 1];
+    const lastTarget = nextDays.find((day) => day.date === lastDate);
+    if (lastTarget) setSelectedDay(lastTarget);
   }, [days, leaderDateInput, persist]);
 
   const handlePDF = async () => {
@@ -175,11 +184,9 @@ export default function ScheduleView({
           <div className="iphone-leader-row">
             <label className="iphone-leader-label">리더 날짜</label>
             <input
-              type="number"
-              min={1}
-              max={31}
+              type="text"
               className="iphone-leader-input"
-              placeholder="일"
+              placeholder="1,3,5"
               value={leaderDateInput}
               onChange={(e) => setLeaderDateInput(e.target.value)}
             />

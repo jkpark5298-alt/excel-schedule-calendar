@@ -33,14 +33,14 @@ function OpsPills({ day }: { day: DaySchedule }) {
   const bottomLabel = skdPillBottomLabel(day);
   return (
     <>
-      <div className="ios-day-slot ios-day-slot-top">
-        <div className={`ios-skd-pill ${skdPillClass(day.myShift)}`}>
+      <div className="ios-day-slot ios-day-slot-top ios-day-slot-lines-2">
+        <div className={`ios-skd-pill ios-skd-pill-multiline ${day.isLeader ? "ios-skd-pill-leader" : ""} ${skdPillClass(day.myShift)}`}>
           {skdPillLabel(day)}
         </div>
       </div>
-      <div className="ios-day-slot ios-day-slot-bottom">
+      <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-lines-2">
         {bottomLabel && (
-          <div className="ios-skd-pill ios-skd-pill-sub-names">{bottomLabel}</div>
+          <div className="ios-skd-pill ios-skd-pill-sub-names ios-skd-pill-multiline">{bottomLabel}</div>
         )}
       </div>
     </>

@@ -19,6 +19,12 @@ body {
   min-height: 100vh;
 }
 
+@media (min-width: 431px) {
+  body {
+    background: linear-gradient(180deg, #0a0a0c 0%, #1c1c1e 100%);
+  }
+}
+
 .shift-C { color: var(--shift-c); font-weight: 700; }
 .shift-A { color: var(--shift-a); font-weight: 700; }
 .shift-dang { color: var(--shift-dang); font-weight: 700; }
@@ -200,7 +206,8 @@ body {
 
 .iphone-app {
   min-height: 100vh;
-  max-width: 100vw;
+  max-width: 430px;
+  margin: 0 auto;
   overflow-x: hidden;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
@@ -304,7 +311,7 @@ body {
 }
 
 .iphone-leader-input {
-  width: 56px;
+  width: 88px;
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid #334155;
@@ -678,6 +685,8 @@ body {
 .iphone-hint { font-size: 11px; color: #636366; margin-top: 12px; text-align: center; }
 .iphone-loading-screen {
   min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -911,6 +920,7 @@ body {
 .ios-day-cell {
   --ios-day-cell-h: 92px;
   --ios-day-slot-h: 24px;
+  --ios-day-slot-h-2: 34px;
   height: var(--ios-day-cell-h);
   min-height: var(--ios-day-cell-h);
   max-height: var(--ios-day-cell-h);
@@ -1203,7 +1213,40 @@ body {
   .ios-day-cell {
     --ios-day-cell-h: 88px;
     --ios-day-slot-h: 22px;
+    --ios-day-slot-h-2: 30px;
   }
+
+  /* iPhone — 운항 캘린더: 상·하단 2줄, 리더 이름 표시 */
+  .ios-day-cell:not(.boarding-skd) {
+    --ios-day-cell-h: 102px;
+  }
+
+  .ios-day-slot-lines-2 {
+    flex: 0 0 var(--ios-day-slot-h-2);
+    min-height: var(--ios-day-slot-h-2);
+    max-height: var(--ios-day-slot-h-2);
+  }
+
+  .ios-skd-pill-multiline {
+    white-space: normal;
+    text-overflow: unset;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-height: 1.15;
+    word-break: break-all;
+    height: 100%;
+  }
+
+  .ios-skd-pill-leader {
+    font-weight: 800;
+  }
+
+  .merged-day-cell {
+    --ios-day-cell-h: 124px;
+  }
+
   .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) { font-size: 9px; }
   .ios-skd-pill-sub-names { font-size: 7px; }
   .ios-skd-pill-boarding { font-size: 8px; }
@@ -1279,6 +1322,7 @@ body {
 .merged-day-cell {
   --ios-day-cell-h: 118px;
   --ios-day-slot-h: 22px;
+  --ios-day-slot-h-2: 30px;
   height: var(--ios-day-cell-h);
   min-height: var(--ios-day-cell-h);
   max-height: var(--ios-day-cell-h);
@@ -1378,11 +1422,6 @@ body {
 }
 
 @media (max-width: 640px) {
-  .merged-day-cell {
-    --ios-day-cell-h: 108px;
-    --ios-day-slot-h: 20px;
-  }
-
   .merged-day-cell .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) {
     font-size: 9px;
   }
@@ -1418,6 +1457,8 @@ body {
 /* ── 김현숙 탑승수속 SKD 입력 화면 ── */
 .boarding-skd-view {
   min-height: 100vh;
+  max-width: 430px;
+  margin: 0 auto;
   background: #0f172a;
   color: #e2e8f0;
 }

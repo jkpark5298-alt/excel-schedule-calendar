@@ -94,10 +94,9 @@ export function skdPillLabel(day: DaySchedule): string {
   const display = formatShiftDisplay(day.myShift);
   let label = `${leader}${display}`;
   if (!isRestShift(day.myShift) && day.sameShiftCoworkers.length > 0) {
-    const names = day.sameShiftCoworkers.slice(0, 3).join("/");
-    label += `/${names}`;
+    label += `/${day.sameShiftCoworkers.join("/")}`;
   }
-  return label.slice(0, 24);
+  return label;
 }
 
 /** 하단 pill (당/C/A 공통): 검정 배경 — 당 홍길동/김철수, C 정찬호/임성우 */
@@ -106,7 +105,22 @@ export function skdPillBottomLabel(day: DaySchedule): string | null {
   if (!rc || rc.names.length === 0) return null;
   const names = rc.names.join("/");
   const prefix = rc.label || rc.type;
-  return `${prefix} ${names}`.slice(0, 24);
+  return `${prefix} ${names}`;
+}
+
+/** 리더 날짜 입력 파싱 — 예: "1,3,5" */
+export function parseLeaderDateInput(input: string): number[] {
+  const seen = new Set<number>();
+  const result: number[] = [];
+  for (const part of input.split(/[,，、/\s]+/)) {
+    const t = part.trim();
+    if (!t) continue;
+    const d = Number(t);
+    if (!Number.isFinite(d) || d < 1 || d > 31 || seen.has(d)) continue;
+    seen.add(d);
+    result.push(d);
+  }
+  return result.sort((a, b) => a - b);
 }
 
 /** @deprecated use skdPillBottomLabel */
