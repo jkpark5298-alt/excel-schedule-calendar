@@ -3,7 +3,9 @@ import ExcelJS from "exceljs";
 import { DaySchedule, ParsedSchedule, WorkerShift } from "@/types/schedule";
 import { normalizeShift, WORK_SHIFTS } from "@/lib/shiftDisplay";
 import { parsePdfText } from "@/lib/parsePdfSchedule";
-import { extractPdfText } from "@/lib/pdfExtract";
+
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function cellText(cell: ExcelJS.Cell): string {
   const v = cell.value;
@@ -229,6 +231,7 @@ export async function POST(req: NextRequest) {
 
     let result: ParsedSchedule;
     if (isPdf) {
+      const { extractPdfText } = await import("@/lib/pdfExtract");
       const text = await extractPdfText(Buffer.from(arrayBuffer));
       result = parsePdfText(text, targetName, resultYear, resultMonth);
     } else {

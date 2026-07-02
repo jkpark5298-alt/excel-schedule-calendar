@@ -9,6 +9,7 @@ import { ParsedSchedule } from "@/types/schedule";
 import { BOARDING_TARGET } from "@/lib/shiftDisplay";
 
 import { getBoardingReferenceSchedule } from "@/lib/boardingReference";
+import { readApiJson } from "@/lib/readApiJson";
 
 import {
 
@@ -152,7 +153,7 @@ export default function IphoneCalendarApp() {
 
     const res = await fetch("/api/parse-schedule", { method: "POST", body: fd });
 
-    const data = await res.json();
+    const data = await readApiJson<{ error?: string; hint?: string } & ParsedSchedule>(res);
 
     if (!res.ok) {
 

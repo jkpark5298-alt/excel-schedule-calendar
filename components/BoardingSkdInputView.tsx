@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { DaySchedule, ParsedSchedule, ShiftCode } from "@/types/schedule";
 import { getBoardingReferenceSchedule } from "@/lib/boardingReference";
+import { readApiJson } from "@/lib/readApiJson";
 import {
   BOARDING_SHIFT_OPTIONS,
   BOARDING_TARGET,
@@ -74,7 +75,7 @@ export default function BoardingSkdInputView({
       fd.append("year", String(year));
       fd.append("month", String(month));
       const res = await fetch("/api/parse-schedule", { method: "POST", body: fd });
-      const data = await res.json();
+      const data = await readApiJson<{ error?: string; hint?: string } & ParsedSchedule>(res);
       if (!res.ok) throw new Error(data.hint ? `${data.error} (${data.hint})` : data.error || "파싱 오류");
       setDays((data as ParsedSchedule).days);
     } catch (e) {

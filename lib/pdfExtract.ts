@@ -1,12 +1,16 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { PDFParse } from "pdf-parse";
+
+const PDF_WORKER_CDN =
+  "https://cdn.jsdelivr.net/npm/pdf-parse@2.4.5/dist/pdf-parse/esm/pdf.worker.mjs";
 
 let workerConfigured = false;
 
-function configurePdfWorker(): void {
+async function configurePdfWorker(): Promise<void> {
   if (workerConfigured) return;
+
+  const { PDFParse } = await import("pdf-parse");
 
   const candidates = [
     path.join(process.cwd(), "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"),
@@ -14,16 +18,18 @@ function configurePdfWorker(): void {
   ];
 
   const workerPath = candidates.find((p) => fs.existsSync(p));
-  if (!workerPath) {
-    throw new Error("PDF worker 파일을 찾을 수 없습니다. npm install을 실행해 주세요.");
+  if (workerPath) {
+    PDFParse.setWorker(pathToFileURL(workerPath).href);
+  } else {
+    PDFParse.setWorker(PDF_WORKER_CDN);
   }
 
-  PDFParse.setWorker(pathToFileURL(workerPath).href);
   workerConfigured = true;
 }
 
 export async function extractPdfText(buffer: Buffer): Promise<string> {
-  configurePdfWorker();
+  await configurePdfWorker();
+  const { PDFParse } = await import("pdf-parse");
   const parser = new PDFParse({ data: buffer });
   try {
     const result = await parser.getText();
