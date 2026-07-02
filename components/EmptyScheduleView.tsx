@@ -1,7 +1,5 @@
 "use client";
 
-import { WEEKDAYS } from "@/lib/groupWeeks";
-
 interface Props {
   year: number;
   month: number;
@@ -23,33 +21,6 @@ export default function EmptyScheduleView({
     <div className="empty-hero">
       <div className="empty-hero-glow" aria-hidden />
 
-      {/* 미니 주간 캘린더 미리보기 */}
-      <div className="empty-preview-card">
-        <div className="empty-preview-header">
-          <span className="empty-preview-badge">주간 캘린더</span>
-          <span className="empty-preview-month">{year}년 {month}월</span>
-        </div>
-        <div className="empty-preview-week-header">
-          {WEEKDAYS.map((dow, i) => (
-            <span
-              key={dow}
-              className={`empty-preview-dow ${i === 0 ? "sun" : i === 6 ? "sat" : ""}`}
-            >
-              {dow}
-            </span>
-          ))}
-        </div>
-        <div className="empty-preview-grid">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className="empty-preview-cell">
-              <span className="empty-preview-cell-dot" />
-            </div>
-          ))}
-        </div>
-        <p className="empty-preview-hint">업로드 후 이 형식으로 표시됩니다</p>
-      </div>
-
-      {/* 메인 메시지 */}
       <div className="empty-hero-content">
         <div className="empty-hero-icon-wrap">
           <span className="empty-hero-icon">📋</span>
@@ -60,14 +31,14 @@ export default function EmptyScheduleView({
           근무표가 없습니다
         </h2>
         <p className="empty-hero-desc">
-          <strong>{targetName}</strong>님의 Excel 근무표를 업로드하면
+          <strong>{targetName}</strong>님의 Excel/PDF 근무표를 업로드하면
           <br />
-          일요일 시작 주간 캘린더로 자동 정리됩니다.
+          월간 캘린더로 자동 정리됩니다.
         </p>
 
         <button type="button" className="empty-hero-cta" onClick={onUpload}>
           <span className="empty-hero-cta-icon">＋</span>
-          Excel 근무표 업로드
+          근무표 업로드 (Excel/PDF)
         </button>
 
         <div className="empty-legend">
@@ -75,6 +46,7 @@ export default function EmptyScheduleView({
           <span className="empty-legend-item"><i className="dot dot-a" />A</span>
           <span className="empty-legend-item"><i className="dot dot-dang" />당</span>
           <span className="empty-legend-item"><i className="dot dot-rest" />休</span>
+          <span className="empty-legend-item">B7/A5/P/D/P6</span>
           <span className="empty-legend-item">👍 리더</span>
         </div>
       </div>

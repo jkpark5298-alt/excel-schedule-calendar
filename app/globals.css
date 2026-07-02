@@ -5,6 +5,11 @@
   --shift-a: #2563eb;
   --shift-dang: #d97706;
   --shift-rest: #dc2626;
+  --shift-b7: #059669;
+  --shift-a5: #0891b2;
+  --shift-p: #7c3aed;
+  --shift-d: #ea580c;
+  --shift-p6: #db2777;
 }
 
 body {
@@ -18,6 +23,11 @@ body {
 .shift-A { color: var(--shift-a); font-weight: 700; }
 .shift-dang { color: var(--shift-dang); font-weight: 700; }
 .shift-rest { color: var(--shift-rest); font-weight: 700; }
+.shift-b7 { color: var(--shift-b7); font-weight: 700; }
+.shift-a5 { color: var(--shift-a5); font-weight: 700; }
+.shift-p { color: var(--shift-p); font-weight: 700; }
+.shift-d { color: var(--shift-d); font-weight: 700; }
+.shift-p6 { color: var(--shift-p6); font-weight: 700; }
 .shift-other { color: #94a3b8; }
 
 .day-card {
@@ -271,6 +281,43 @@ body {
 }
 
 .iphone-toolbar-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.iphone-zoom-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #cbd5e1;
+  min-width: 42px;
+  text-align: center;
+}
+
+.iphone-leader-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.iphone-leader-label {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.iphone-leader-input {
+  width: 56px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #334155;
+  background: #1e293b;
+  color: #fff;
+  font-size: 13px;
+}
+
+.ios-month-zoom-wrap {
+  transform-origin: top center;
+  transition: transform 0.2s ease;
+  margin: 0 auto;
+}
 
 .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
 .btn-filter { padding: 4px 12px; font-size: 12px; border-radius: 999px; }
@@ -735,6 +782,10 @@ body {
   flex-shrink: 0;
 }
 
+.iphone-saved-dot.locked {
+  background: #ff9f0a;
+}
+
 .iphone-saved-help {
   margin-left: auto;
   background: none;
@@ -833,31 +884,17 @@ body {
   background: #fff;
 }
 
-.ios-week-row-with-wn {
+.ios-week-row {
   display: grid;
-  grid-template-columns: 22px repeat(7, 1fr);
+  grid-template-columns: repeat(7, 1fr);
   border-bottom: 1px solid #e5e5ea;
   align-items: stretch;
 }
-.ios-week-row-with-wn:last-child { border-bottom: none; }
+.ios-week-row:last-child { border-bottom: none; }
 
 .ios-dow-header-row {
   background: #fafafa;
 }
-
-.ios-weeknum {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 6px;
-  font-size: 10px;
-  color: #8e8e93;
-  font-weight: 500;
-  background: #fafafa;
-  border-right: 1px solid #e5e5ea;
-}
-
-.ios-weeknum-header { min-height: 28px; }
 
 .ios-dow {
   text-align: center;
@@ -888,6 +925,8 @@ body {
 .ios-day-cell:disabled { cursor: default; }
 .ios-day-cell.has-skd { cursor: pointer; }
 .ios-day-cell.has-skd:active { background: #f2f2f7; }
+.ios-day-cell.empty-day { cursor: pointer; opacity: 0.85; }
+.ios-day-cell.empty-day:active { background: #f2f2f7; }
 
 .ios-day-cell.out-month { background: #fafafa; }
 .ios-day-cell.out-month .ios-day-num { color: #c7c7cc; }
@@ -933,9 +972,25 @@ body {
   min-height: 0;
 }
 
-.ios-skd-pill {
+.ios-day-events-bottom {
+  justify-content: flex-end;
+  margin-top: auto;
+}
+
+.ios-day-cell.boarding-skd .ios-day-events-bottom {
+  padding-bottom: 1px;
+}
+
+.ios-skd-pill-boarding {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 800;
+  text-align: center;
+  white-space: normal;
+  word-break: break-all;
+  line-height: 1.2;
+}
+
+.ios-skd-pill {
   line-height: 1.25;
   padding: 1px 3px;
   border-radius: 3px;
@@ -945,15 +1000,56 @@ body {
   text-align: left;
 }
 
+/* 상단 — 내 근무 (하단보다 굵고 약간 큼) */
+.ios-skd-pill:not(.ios-skd-pill-sub-names) {
+  font-size: 10px;
+  font-weight: 800;
+}
+
 .ios-skd-pill-sub {
   font-size: 8px;
   opacity: 0.85;
+}
+
+.ios-skd-names {
+  font-size: 7px;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 1px 3px;
+  border-radius: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.ios-skd-pill-sub-names,
+.ios-skd-pill-dang-names {
+  background: #000;
+  color: #fff;
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.ios-skd-names-panel {
+  font-size: 12px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .skd-pill-c { background: #f3e8ff; color: #7c3aed; }
 .skd-pill-a { background: #dbeafe; color: #2563eb; }
 .skd-pill-dang { background: #ffedd5; color: #c2410c; }
 .skd-pill-rest { background: #fee2e2; color: #dc2626; }
+/* 탑승수속 SKD 색상 */
+.skd-pill-b7 { background: #dcfce7; color: #16a34a; }
+.skd-pill-a5 { background: #cffafe; color: #0891b2; }
+.skd-pill-p { background: #ede9fe; color: #7c3aed; }
+.skd-pill-d { background: #ffedd5; color: #ea580c; }
+.skd-pill-p6 { background: #fce7f3; color: #db2777; }
 .skd-pill-other { background: #f1f5f9; color: #64748b; }
 
 /* Bottom SKD panel (selected day) */
@@ -1020,7 +1116,18 @@ body {
 
 .day-skd-panel-body { padding: 0 16px 12px; }
 
-.day-skd-main { margin-bottom: 12px; }
+.day-skd-main {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.day-skd-display-label {
+  font-size: 14px;
+  color: #94a3b8;
+}
 
 .day-skd-row {
   display: flex;
@@ -1057,5 +1164,255 @@ body {
 
 @media (max-width: 640px) {
   .ios-day-cell { min-height: 80px; }
-  .ios-skd-pill { font-size: 8px; }
+  .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) { font-size: 9px; }
+  .ios-skd-pill-sub-names { font-size: 7px; }
+  .ios-skd-pill-boarding { font-size: 8px; }
+}
+
+/* ── 대상자 탭 (박종규 / 김현숙) ── */
+.iphone-person-tabs {
+  display: flex;
+  gap: 4px;
+  background: #2c2c2e;
+  border-radius: 8px;
+  padding: 2px;
+}
+
+.iphone-person-tab {
+  background: transparent;
+  border: none;
+  color: #8e8e93;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.iphone-person-tab.active {
+  background: #0a84ff;
+  color: #fff;
+}
+
+.iphone-person-tab-dual {
+  font-size: 10px;
+  padding-inline: 6px;
+}
+
+.iphone-nav-upload-muted {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.merged-schedule-body {
+  padding-inline: 8px;
+}
+
+.merged-month-wrap {
+  overflow: hidden;
+}
+
+.merged-month-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 8px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-bottom: 1px solid #e5e5ea;
+  background: #f9f9fb;
+}
+
+.merged-legend-ops {
+  color: #007aff;
+}
+
+.merged-legend-boarding {
+  color: #34c759;
+}
+
+.merged-legend-sep {
+  color: #8e8e93;
+}
+
+.merged-day-cell {
+  min-height: 112px;
+}
+
+.merged-day-events {
+  gap: 2px;
+}
+
+.merged-ops-block {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex-shrink: 0;
+}
+
+.merged-boarding-block {
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding-top: 2px;
+  border-top: 1px dashed #e5e5ea;
+}
+
+.merged-empty-tag {
+  font-size: 8px;
+  color: #c7c7cc;
+  padding: 1px 2px;
+}
+
+.merged-empty-tag-boarding {
+  text-align: center;
+}
+
+.merged-day-cell .ios-skd-pill-boarding {
+  font-size: 8px;
+}
+
+@media (max-width: 640px) {
+  .merged-day-cell {
+    min-height: 100px;
+  }
+
+  .merged-day-cell .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) {
+    font-size: 9px;
+  }
+
+  .merged-day-cell .ios-skd-pill-sub-names {
+    font-size: 7px;
+  }
+
+  .merged-day-cell .ios-skd-pill-boarding {
+    font-size: 7px;
+  }
+}
+
+.dual-calendar-empty {
+  border: 1px dashed #3a3a3c;
+  border-radius: 12px;
+  padding: 24px 12px;
+  text-align: center;
+  color: #8e8e93;
+  font-size: 13px;
+}
+
+.dual-calendar-empty-main {
+  margin-top: 24px;
+}
+
+.dual-calendar-empty-hint {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #636366;
+}
+
+/* ── 김현숙 탑승수속 SKD 입력 화면 ── */
+.boarding-skd-view {
+  min-height: 100vh;
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.boarding-skd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px 12px;
+  background: #1c1c1e;
+  border-bottom: 1px solid #2c2c2e;
+}
+
+.boarding-skd-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.boarding-skd-body {
+  padding: 12px 16px 32px;
+}
+
+.boarding-skd-meta { margin-bottom: 12px; }
+
+.boarding-skd-ref-btn {
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.boarding-skd-upload { margin-bottom: 8px; }
+
+.boarding-skd-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.boarding-legend-pill {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 6px;
+  border-radius: 4px;
+}
+
+.boarding-skd-table-wrap {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  margin-bottom: 12px;
+}
+
+.boarding-skd-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.boarding-skd-table th,
+.boarding-skd-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #334155;
+  text-align: left;
+}
+
+.boarding-skd-table th {
+  background: #1e293b;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.boarding-skd-table tr:last-child td { border-bottom: none; }
+
+.boarding-skd-select {
+  background: #1e293b;
+  border: 1px solid #475569;
+  color: #fff;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font-size: 12px;
+}
+
+.boarding-skd-display {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.boarding-skd-empty {
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+  padding: 24px 12px;
+}
+
+.boarding-skd-add-btn {
+  width: 100%;
 }

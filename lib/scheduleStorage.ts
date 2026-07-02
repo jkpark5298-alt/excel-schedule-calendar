@@ -13,11 +13,63 @@ export const MIN_MONTH = 1;
 export interface StoredCalendarData {
   targetName: string;
   schedules: Record<string, ParsedSchedule>;
+  /** 확정(잠금)된 scheduleKey 목록 — 수정·삭제·재업로드 불가 */
+  lockedKeys?: string[];
   savedAt?: number;
 }
 
 export function monthKey(year: number, month: number): string {
   return `${year}-${String(month).padStart(2, "0")}`;
+}
+
+export function scheduleKey(targetName: string, year: number, month: number): string {
+  return `${targetName}|${monthKey(year, month)}`;
+}
+
+export function parseScheduleKey(key: string): { targetName: string; year: number; month: number } | null {
+  const pipe = key.indexOf("|");
+  if (pipe === -1) return null;
+  const targetName = key.slice(0, pipe);
+  const [y, m] = key.slice(pipe + 1).split("-");
+  const year = Number(y);
+  const month = Number(m);
+  if (!targetName || !Number.isFinite(year) || !Number.isFinite(month)) return null;
+  return { targetName, year, month };
+}
+
+function migrateStoredCalendar(data: StoredCalendarData): StoredCalendarData {
+  const schedules: Record<string, ParsedSchedule> = {};
+  let changed = false;
+
+  for (const [key, schedule] of Object.entries(data.schedules || {})) {
+    if (key.includes("|")) {
+      schedules[key] = schedule;
+      continue;
+    }
+    const name = schedule.targetName || data.targetName || "박종규";
+    const newKey = scheduleKey(name, schedule.year, schedule.month);
+    if (!schedules[newKey]) {
+      schedules[newKey] = { ...schedule, targetName: name };
+      changed = true;
+    }
+  }
+
+  return changed ? { ...data, schedules } : data;
+}
+
+export function getScheduleForPerson(
+  data: StoredCalendarData,
+  targetName: string,
+  year: number,
+  month: number,
+): ParsedSchedule | null {
+  const key = scheduleKey(targetName, year, month);
+  const direct = data.schedules[key];
+  if (direct) return direct;
+
+  const legacy = data.schedules[monthKey(year, month)];
+  if (legacy && (legacy.targetName || data.targetName) === targetName) return legacy;
+  return null;
 }
 
 export function isWithinRange(year: number, month: number): boolean {
@@ -105,7 +157,11 @@ export function readStoredCalendar(): StoredCalendarData {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { targetName: "박종규", schedules: {} };
     const parsed = JSON.parse(raw) as StoredCalendarData;
-    return { targetName: parsed.targetName || "박종규", schedules: parsed.schedules || {} };
+    return migrateStoredCalendar({
+      targetName: parsed.targetName || "박종규",
+      schedules: parsed.schedules || {},
+      lockedKeys: parsed.lockedKeys || [],
+    });
   } catch {
     return { targetName: "박종규", schedules: {} };
   }
@@ -119,8 +175,9 @@ export async function loadStoredCalendar(): Promise<StoredCalendarData> {
   const localCount = Object.keys(local.schedules).length;
   const idbCount = Object.keys(idb.schedules || {}).length;
   if (idbCount >= localCount) {
-    writeStoredCalendar(idb);
-    return idb;
+    const migrated = migrateStoredCalendar(idb);
+    writeStoredCalendar(migrated);
+    return migrated;
   }
   if (localCount > 0) void writeToIDB(local);
   return local;
@@ -133,26 +190,73 @@ export function writeStoredCalendar(data: StoredCalendarData): void {
 }
 
 export function saveScheduleForMonth(data: StoredCalendarData, schedule: ParsedSchedule): StoredCalendarData {
-  const key = monthKey(schedule.year, schedule.month);
+  const key = scheduleKey(schedule.targetName, schedule.year, schedule.month);
+  const legacyKey = monthKey(schedule.year, schedule.month);
+  const { [legacyKey]: _legacy, ...rest } = data.schedules;
   const next: StoredCalendarData = {
     targetName: schedule.targetName,
-    schedules: { ...data.schedules, [key]: schedule },
+    schedules: { ...rest, [key]: schedule },
     savedAt: Date.now(),
   };
   writeStoredCalendar(next);
   return next;
 }
 
-export function deleteScheduleForMonth(data: StoredCalendarData, year: number, month: number): StoredCalendarData {
-  const key = monthKey(year, month);
-  const { [key]: _, ...rest } = data.schedules;
+export function deleteScheduleForMonth(
+  data: StoredCalendarData,
+  targetName: string,
+  year: number,
+  month: number,
+): StoredCalendarData {
+  const key = scheduleKey(targetName, year, month);
+  const legacyKey = monthKey(year, month);
+  const { [key]: _, [legacyKey]: __, ...rest } = data.schedules;
   const next: StoredCalendarData = { ...data, schedules: rest, savedAt: Date.now() };
   writeStoredCalendar(next);
   return next;
 }
 
-export function listStoredMonths(data: StoredCalendarData): string[] {
-  return Object.keys(data.schedules).sort();
+export function listStoredMonths(data: StoredCalendarData, targetName?: string): string[] {
+  const months = new Set<string>();
+  for (const key of Object.keys(data.schedules)) {
+    const parsed = parseScheduleKey(key);
+    if (parsed) {
+      if (!targetName || parsed.targetName === targetName) {
+        months.add(monthKey(parsed.year, parsed.month));
+      }
+      continue;
+    }
+    const schedule = data.schedules[key];
+    if (!targetName || schedule.targetName === targetName || data.targetName === targetName) {
+      months.add(key);
+    }
+  }
+  return [...months].sort();
+}
+
+export function isScheduleLocked(
+  data: StoredCalendarData,
+  targetName: string,
+  year: number,
+  month: number,
+): boolean {
+  const key = scheduleKey(targetName, year, month);
+  return (data.lockedKeys ?? []).includes(key);
+}
+
+export function toggleScheduleLock(
+  data: StoredCalendarData,
+  targetName: string,
+  year: number,
+  month: number,
+): StoredCalendarData {
+  const key = scheduleKey(targetName, year, month);
+  const locked = new Set(data.lockedKeys ?? []);
+  if (locked.has(key)) locked.delete(key);
+  else locked.add(key);
+  const next: StoredCalendarData = { ...data, lockedKeys: [...locked], savedAt: Date.now() };
+  writeStoredCalendar(next);
+  return next;
 }
 
 export function exportBackupJson(data: StoredCalendarData): string {
@@ -164,11 +268,12 @@ export function importBackupJson(raw: string): StoredCalendarData {
   if (!parsed.schedules || typeof parsed.schedules !== "object") {
     throw new Error("올바른 백업 파일이 아닙니다.");
   }
-  const next: StoredCalendarData = {
+  const next: StoredCalendarData = migrateStoredCalendar({
     targetName: parsed.targetName || "박종규",
     schedules: parsed.schedules,
+    lockedKeys: parsed.lockedKeys || [],
     savedAt: Date.now(),
-  };
+  });
   writeStoredCalendar(next);
   return next;
 }

@@ -1,4 +1,7 @@
-export type ShiftCode = "C" | "A" | "당" | "休" | "전" | "X" | "N" | "연" | "사고대" | "노교" | string;
+export type ShiftCode =
+  | "C" | "A" | "당" | "休" | "전" | "X" | "N" | "연" | "사고대" | "노교"
+  | "B7" | "A5" | "P" | "D" | "P6" | "교육" | "주"
+  | string;
 
 export interface WorkerShift {
   name: string;

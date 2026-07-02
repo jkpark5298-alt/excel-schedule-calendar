@@ -8,11 +8,20 @@ export default function PinHelpBanner({ onClose }: Props) {
   return (
     <div className="iphone-modal-overlay" onClick={onClose}>
       <div className="pin-help-modal" onClick={(e) => e.stopPropagation()}>
-        <h3>📌 월별 근무표 고정 방법</h3>
+        <h3>📌 월별 근무표 사용·고정 방법</h3>
         <ol className="pin-help-list">
           <li>
+            <strong>매달 업로드 (동일 방법)</strong>
+            <p>박종규 / 김현숙 탭 → <strong>+ 입력</strong> → 년·월 선택 → Excel 또는 PDF 업로드</p>
+            <p className="pin-help-sub">두 사람은 각각 업로드합니다. <strong>함께</strong> 탭에서 한 캘린더로 확인.</p>
+          </li>
+          <li>
             <strong>자동 저장</strong>
-            <p>Excel 업로드 시 해당 월이 자동 저장됩니다. (브라우저 + IndexedDB)</p>
+            <p>업로드 즉시 해당 월·대상자별로 브라우저에 저장됩니다. (localStorage + IndexedDB)</p>
+          </li>
+          <li>
+            <strong>확정 (잠금)</strong>
+            <p>상단 <strong>📌 확정</strong> 버튼 → 수정·삭제·재업로드 불가. <strong>🔓 확정 해제</strong>로 다시 편집.</p>
           </li>
           <li>
             <strong>홈 화면 추가 (권장)</strong>
@@ -21,11 +30,7 @@ export default function PinHelpBanner({ onClose }: Props) {
           </li>
           <li>
             <strong>백업 파일</strong>
-            <p>상단 <strong>백업</strong> 버튼으로 JSON 저장 → 다른 기기에서 <strong>복원</strong></p>
-          </li>
-          <li>
-            <strong>월 이동</strong>
-            <p>‹ › 버튼으로 저장된 다른 월을 바로 확인할 수 있습니다.</p>
+            <p><strong>백업</strong> → JSON 저장 → 다른 기기·브라우저에서 <strong>복원</strong></p>
           </li>
         </ol>
         <button type="button" className="btn btn-primary w-full" onClick={onClose}>확인</button>
