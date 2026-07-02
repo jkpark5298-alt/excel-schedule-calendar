@@ -25,12 +25,16 @@ function OpsPills({ day }: { day: DaySchedule }) {
   const bottomLabel = skdPillBottomLabel(day);
   return (
     <>
-      <div className={`ios-skd-pill ${skdPillClass(day.myShift)}`}>
-        {skdPillLabel(day)}
+      <div className="ios-day-slot ios-day-slot-top">
+        <div className={`ios-skd-pill ${skdPillClass(day.myShift)}`}>
+          {skdPillLabel(day)}
+        </div>
       </div>
-      {bottomLabel && (
-        <div className="ios-skd-pill ios-skd-pill-sub-names">{bottomLabel}</div>
-      )}
+      <div className="ios-day-slot ios-day-slot-bottom">
+        {bottomLabel && (
+          <div className="ios-skd-pill ios-skd-pill-sub-names">{bottomLabel}</div>
+        )}
+      </div>
     </>
   );
 }
@@ -108,8 +112,18 @@ export default function MergedMonthCalendar({
                         {cell.opsDay ? (
                           <OpsPills day={cell.opsDay} />
                         ) : cell.inMonth ? (
-                          <span className="merged-empty-tag">{opsTarget.slice(0, 1)} —</span>
-                        ) : null}
+                          <>
+                            <div className="ios-day-slot ios-day-slot-top">
+                              <span className="merged-empty-tag">{opsTarget.slice(0, 1)} —</span>
+                            </div>
+                            <div className="ios-day-slot ios-day-slot-bottom" aria-hidden="true" />
+                          </>
+                        ) : (
+                          <>
+                            <div className="ios-day-slot ios-day-slot-top" aria-hidden="true" />
+                            <div className="ios-day-slot ios-day-slot-bottom" aria-hidden="true" />
+                          </>
+                        )}
                       </div>
 
                       <div className="merged-boarding-block">

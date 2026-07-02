@@ -85,19 +85,33 @@ export default function IosMonthCalendar({
                     <span className={`ios-day-num ${cell.isToday ? "today-num" : ""}`}>
                       {cell.date}
                     </span>
-                    <div className={`ios-day-events ${boarding ? "ios-day-events-bottom" : ""}`}>
-                      {schedule && !boarding && (
-                        <div className={`ios-skd-pill ${skdPillClass(schedule.myShift)}`}>
-                          {skdPillLabel(schedule)}
-                        </div>
-                      )}
-                      {bottomLabel && (
-                        <div className="ios-skd-pill ios-skd-pill-sub-names">{bottomLabel}</div>
-                      )}
-                      {schedule && boarding && (
-                        <div className={`ios-skd-pill ios-skd-pill-boarding ${skdPillClass(schedule.myShift)}`}>
-                          {skdPillBoardingLabel(schedule)}
-                        </div>
+                    <div className={`ios-day-events ${boarding ? "ios-day-events-boarding" : "ios-day-events-ops"}`}>
+                      {!boarding ? (
+                        <>
+                          <div className="ios-day-slot ios-day-slot-top">
+                            {schedule && (
+                              <div className={`ios-skd-pill ${skdPillClass(schedule.myShift)}`}>
+                                {skdPillLabel(schedule)}
+                              </div>
+                            )}
+                          </div>
+                          <div className="ios-day-slot ios-day-slot-bottom">
+                            {bottomLabel && (
+                              <div className="ios-skd-pill ios-skd-pill-sub-names">{bottomLabel}</div>
+                            )}
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="ios-day-slot ios-day-slot-spacer" aria-hidden="true" />
+                          <div className="ios-day-slot ios-day-slot-bottom">
+                            {schedule && (
+                              <div className={`ios-skd-pill ios-skd-pill-boarding ${skdPillClass(schedule.myShift)}`}>
+                                {skdPillBoardingLabel(schedule)}
+                              </div>
+                            )}
+                          </div>
+                        </>
                       )}
                     </div>
                   </button>
