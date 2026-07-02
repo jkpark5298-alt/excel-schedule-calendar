@@ -11,11 +11,14 @@ interface Props {
   day: DaySchedule;
   year?: number;
   month?: number;
+  shiftOptions?: ShiftCode[];
   onSave: (updated: DaySchedule) => void;
   onClose: () => void;
 }
 
-export default function EditDayModal({ mode = "edit", day, year, month, onSave, onClose }: Props) {
+export default function EditDayModal({
+  mode = "edit", day, year, month, shiftOptions = SHIFT_OPTIONS, onSave, onClose,
+}: Props) {
   const [date, setDate] = useState(day.date);
   const [dayOfWeek, setDayOfWeek] = useState(day.dayOfWeek);
   const [myShift, setMyShift] = useState<ShiftCode>(day.myShift);
@@ -69,7 +72,7 @@ export default function EditDayModal({ mode = "edit", day, year, month, onSave, 
         <div className="mb-4">
           <label className="text-sm text-slate-400 mb-2 block">근무 형태</label>
           <div className="grid grid-cols-3 gap-2">
-            {SHIFT_OPTIONS.map(s => (
+            {shiftOptions.map(s => (
               <button
                 key={s}
                 type="button"

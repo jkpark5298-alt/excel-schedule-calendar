@@ -443,6 +443,14 @@ export default function IphoneCalendarApp() {
 
           boardingSchedule={boardingSchedule}
 
+          opsLocked={isScheduleLocked(stored, OPS_TARGET, year, month)}
+
+          boardingLocked={isScheduleLocked(stored, BOARDING_TARGET, year, month)}
+
+          onOpsScheduleUpdate={handleScheduleUpdate}
+
+          onBoardingScheduleUpdate={handleScheduleUpdate}
+
         />
 
       ) : schedule ? (

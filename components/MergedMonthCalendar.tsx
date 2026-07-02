@@ -19,6 +19,14 @@ interface Props {
   opsTarget: string;
   boardingTarget: string;
   zoom?: number;
+  selectedDate?: number | null;
+  onSelectCell?: (cell: {
+    date: number;
+    dayOfWeek: string;
+    inMonth: boolean;
+    opsDay: DaySchedule | null;
+    boardingDay: DaySchedule | null;
+  }) => void;
 }
 
 function OpsPills({ day }: { day: DaySchedule }) {
@@ -55,6 +63,8 @@ export default function MergedMonthCalendar({
   opsTarget,
   boardingTarget,
   zoom = 1,
+  selectedDate = null,
+  onSelectCell,
 }: Props) {
   const now = new Date();
   const today = { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
@@ -91,17 +101,29 @@ export default function MergedMonthCalendar({
             <div key={wi} className="ios-week-row">
               {week.map((cell) => {
                 const hasSkd = !!(cell.opsDay || cell.boardingDay);
+                const sel = selectedDate === cell.date && cell.inMonth;
+                const clickable = cell.inMonth && hasSkd && !!onSelectCell;
 
                 return (
-                  <div
+                  <button
                     key={cell.key}
+                    type="button"
                     className={[
                       "ios-day-cell merged-day-cell",
                       !cell.inMonth ? "out-month" : "",
                       cell.isToday ? "today" : "",
+                      sel ? "selected" : "",
                       hasSkd ? "has-skd" : "",
                       cell.inMonth && !hasSkd ? "empty-day" : "",
                     ].filter(Boolean).join(" ")}
+                    disabled={!clickable}
+                    onClick={() => onSelectCell?.({
+                      date: cell.date,
+                      dayOfWeek: cell.dayOfWeek,
+                      inMonth: cell.inMonth,
+                      opsDay: cell.opsDay,
+                      boardingDay: cell.boardingDay,
+                    })}
                   >
                     <span className={`ios-day-num ${cell.isToday ? "today-num" : ""}`}>
                       {cell.date}
@@ -136,7 +158,7 @@ export default function MergedMonthCalendar({
                         ) : null}
                       </div>
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
