@@ -3,9 +3,14 @@ import ExcelJS from "exceljs";
 import { DaySchedule, ParsedSchedule, WorkerShift } from "@/types/schedule";
 import { normalizeShift, WORK_SHIFTS } from "@/lib/shiftDisplay";
 import { parsePdfText } from "@/lib/parsePdfSchedule";
+import {
+  isImageFileName,
+  parseScheduleImage,
+  sniffImageMime,
+} from "@/lib/parseImageSchedule";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 function cellText(cell: ExcelJS.Cell): string {
   const v = cell.value;
@@ -228,9 +233,18 @@ export async function POST(req: NextRequest) {
 
     const arrayBuffer = await file.arrayBuffer();
     const isPdf = file.name.match(/\.pdf$/i);
+    const isImage = isImageFileName(file.name) || String(file.type || "").startsWith("image/");
 
     let result: ParsedSchedule;
-    if (isPdf) {
+    if (isImage) {
+      result = await parseScheduleImage(
+        Buffer.from(arrayBuffer),
+        sniffImageMime(file.name, file.type),
+        targetName,
+        resultYear,
+        resultMonth,
+      );
+    } else if (isPdf) {
       const { extractPdfText } = await import("@/lib/pdfExtract");
       const text = await extractPdfText(Buffer.from(arrayBuffer));
       result = parsePdfText(text, targetName, resultYear, resultMonth);

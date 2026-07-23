@@ -58,8 +58,8 @@ export default function BoardingSkdInputView({
   }, [initialDays, year, month]);
 
   const processFile = async (file: File) => {
-    if (!file.name.match(/\.(xlsx|xls|pdf)$/i)) {
-      setError("Excel(.xlsx, .xls) 또는 PDF(.pdf)만 업로드할 수 있습니다.");
+    if (!file.name.match(/\.(xlsx|xls|pdf|png|jpe?g|webp|gif|heic|heif|bmp)$/i) && !file.type.startsWith("image/")) {
+      setError("Excel(.xlsx, .xls), PDF(.pdf) 또는 이미지만 업로드할 수 있습니다.");
       return;
     }
     if (!isWithinRange(year, month)) {
@@ -163,13 +163,13 @@ export default function BoardingSkdInputView({
           <input
             ref={inputRef}
             type="file"
-            accept=".xlsx,.xls,.pdf"
+            accept=".xlsx,.xls,.pdf,image/*,.png,.jpg,.jpeg,.webp,.heic"
             className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) void processFile(f); e.target.value = ""; }}
           />
           <div className="text-2xl mb-1">📁</div>
-          <p className="text-white font-semibold text-sm">Excel / PDF 업로드</p>
-          <p className="text-slate-500 text-xs mt-1">탑승수속팀 26년 7월 SKD PDF</p>
+          <p className="text-white font-semibold text-sm">Excel / PDF / 이미지 업로드</p>
+          <p className="text-slate-500 text-xs mt-1">탑승수속팀 SKD 파일 또는 사진</p>
         </div>
 
         <button type="button" className="btn btn-secondary boarding-skd-ref-btn" onClick={loadPdfReference}>

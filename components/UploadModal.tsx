@@ -24,8 +24,8 @@ export default function UploadModal({ targetName, year, month, onTargetNameChang
   for (let y = MIN_YEAR; y <= MAX_YEAR; y++) years.push(y);
 
   const processFile = async (file: File) => {
-    if (!file.name.match(/\.(xlsx|xls|pdf)$/i)) {
-      setError("Excel(.xlsx, .xls) 또는 PDF(.pdf) 파일만 업로드할 수 있습니다.");
+    if (!file.name.match(/\.(xlsx|xls|pdf|png|jpe?g|webp|gif|heic|heif|bmp)$/i) && !file.type.startsWith("image/")) {
+      setError("Excel(.xlsx, .xls), PDF(.pdf) 또는 이미지(.png, .jpg 등)만 업로드할 수 있습니다.");
       return;
     }
     if (!isWithinRange(uploadYear, uploadMonth)) {
@@ -77,11 +77,11 @@ export default function UploadModal({ targetName, year, month, onTargetNameChang
             onDragLeave={() => setDragOver(false)}
             onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) void processFile(f); }}
           >
-            <input ref={inputRef} type="file" accept=".xlsx,.xls,.pdf" className="hidden"
+            <input ref={inputRef} type="file" accept=".xlsx,.xls,.pdf,image/*,.png,.jpg,.jpeg,.webp,.heic" className="hidden"
               onChange={(e) => { const f = e.target.files?.[0]; if (f) void processFile(f); }} />
             <div className="text-3xl mb-2">📁</div>
-            <p className="text-white font-semibold text-sm">Excel / PDF 파일 선택</p>
-            <p className="text-slate-500 text-xs mt-1">.xlsx, .xls, .pdf</p>
+            <p className="text-white font-semibold text-sm">Excel / PDF / 이미지 선택</p>
+            <p className="text-slate-500 text-xs mt-1">.xlsx, .xls, .pdf, .png, .jpg</p>
           </div>
           {error && <div className="iphone-error">{error}</div>}
           {loading && <div className="iphone-loading">파일 분석 중...</div>}
