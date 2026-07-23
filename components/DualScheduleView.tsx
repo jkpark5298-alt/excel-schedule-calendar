@@ -127,7 +127,9 @@ export default function DualScheduleView({
             <button
               type="button"
               className="btn btn-sm btn-secondary"
-              onClick={() => downloadMonthIcs(opsSchedule)}
+              onClick={() => {
+                void downloadMonthIcs(opsSchedule);
+              }}
             >
               ICS {opsTarget}
             </button>
@@ -136,7 +138,9 @@ export default function DualScheduleView({
             <button
               type="button"
               className="btn btn-sm btn-secondary"
-              onClick={() => downloadMonthIcs(boardingSchedule)}
+              onClick={() => {
+                void downloadMonthIcs(boardingSchedule);
+              }}
             >
               ICS {boardingTarget}
             </button>

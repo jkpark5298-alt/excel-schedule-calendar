@@ -13,6 +13,20 @@ function escapeIcsText(s: string) {
     .replace(/\n/g, "\\n");
 }
 
+/** RFC 5545: content lines should be folded at 75 octets */
+function foldLine(line: string): string {
+  if (line.length <= 75) return line;
+  const parts: string[] = [];
+  let rest = line;
+  parts.push(rest.slice(0, 75));
+  rest = rest.slice(75);
+  while (rest.length > 0) {
+    parts.push(" " + rest.slice(0, 74));
+    rest = rest.slice(74);
+  }
+  return parts.join("\r\n");
+}
+
 function shiftLabel(day: DaySchedule) {
   if (SHIFT_TIME_LABELS[day.myShift]) return SHIFT_TIME_LABELS[day.myShift];
   if (day.myShift === "C") return "C근무";
@@ -20,6 +34,11 @@ function shiftLabel(day: DaySchedule) {
   if (day.myShift === "당") return "당근무";
   if (isRestShift(day.myShift)) return "休(휴무)";
   return String(day.myShift);
+}
+
+function asciiFileSlug(name: string): string {
+  const ascii = name.replace(/[^\w.-]+/g, "_").replace(/^_+|_+$/g, "");
+  return ascii || "schedule";
 }
 
 function buildVEvent(day: DaySchedule, schedule: ParsedSchedule): string {
@@ -43,7 +62,8 @@ function buildVEvent(day: DaySchedule, schedule: ParsedSchedule): string {
     descParts.push(`${day.relatedCoworkers.label}: ${day.relatedCoworkers.names.join(", ")}`);
   }
   const description = escapeIcsText(descParts.join("\n"));
-  const uid = `${schedule.targetName}-${dtStart}-${day.myShift}@work-schedule`.replace(/\s/g, "");
+  // UID는 ASCII만 (한글 UID는 일부 캘린더가 무시)
+  const uid = `ws-${schedule.year}${m}${d}-${encodeURIComponent(String(day.myShift))}@work-schedule.local`;
   const stamp = new Date()
     .toISOString()
     .replace(/[-:]/g, "")
@@ -55,13 +75,13 @@ function buildVEvent(day: DaySchedule, schedule: ParsedSchedule): string {
     `DTSTAMP:${stamp}`,
     `DTSTART;VALUE=DATE:${dtStart}`,
     `DTEND;VALUE=DATE:${dtEnd}`,
-    `SUMMARY:${summary}`,
-    `DESCRIPTION:${description}`,
+    foldLine(`SUMMARY:${summary}`),
+    foldLine(`DESCRIPTION:${description}`),
     "END:VEVENT",
   ].join("\r\n");
 }
 
-/** 기본은 휴무 포함 — Google 가져오기 시 빈 파일 방지 */
+/** 기본은 휴무 포함 */
 export function buildMonthIcs(schedule: ParsedSchedule, includeRest = true): string {
   const days = (schedule.days ?? []).filter((d) => includeRest || !isRestShift(d.myShift));
   const events = days.map((d) => buildVEvent(d, schedule));
@@ -74,7 +94,7 @@ export function buildMonthIcs(schedule: ParsedSchedule, includeRest = true): str
     "PRODID:-//Work Schedule Calendar//KO",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    `X-WR-CALNAME:${calName}`,
+    foldLine(`X-WR-CALNAME:${calName}`),
     ...events,
     "END:VCALENDAR",
   ].join("\r\n");
@@ -84,24 +104,73 @@ export function countIcsEvents(schedule: ParsedSchedule, includeRest = true): nu
   return (schedule.days ?? []).filter((d) => includeRest || !isRestShift(d.myShift)).length;
 }
 
-export function downloadMonthIcs(schedule: ParsedSchedule, includeRest = true): void {
+function makeIcsFile(schedule: ParsedSchedule, includeRest: boolean): { file: File; ics: string; count: number; filename: string } {
   const count = countIcsEvents(schedule, includeRest);
+  const ics = buildMonthIcs(schedule, includeRest);
+  const filename = `schedule_${asciiFileSlug(schedule.targetName)}_${schedule.year}-${pad(schedule.month)}.ics`;
+  // text/plain으로도 넣으면 iOS 공유 시트에 파일이 더 잘 뜸
+  const file = new File([ics], filename, { type: "text/calendar;charset=utf-8" });
+  return { file, ics, count, filename };
+}
+
+function triggerAnchorDownload(blob: Blob, filename: string): void {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.rel = "noopener";
+  a.style.display = "none";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
+/**
+ * iPhone: Web Share로 .ics 공유(캘린더/파일에 저장)
+ * Desktop: 파일 다운로드
+ */
+export async function downloadMonthIcs(
+  schedule: ParsedSchedule,
+  includeRest = true,
+): Promise<void> {
+  const { file, ics, count, filename } = makeIcsFile(schedule, includeRest);
   if (count === 0) {
     alert("내보낼 일정이 없습니다. 월간 일정이 있는지 확인해 주세요.");
     return;
   }
 
-  const ics = buildMonthIcs(schedule, includeRest);
-  // UTF-8 BOM: 일부 캘린더 앱이 한글 SUMMARY를 깨뜨리지 않도록
-  const blob = new Blob(["\uFEFF" + ics], { type: "text/calendar;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `schedule_${schedule.targetName}_${schedule.year}-${pad(schedule.month)}.ics`;
-  a.style.display = "none";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  // iOS/Safari: click 직후 revoke하면 빈 파일이 됨
-  window.setTimeout(() => URL.revokeObjectURL(url), 2500);
+  // 1) iOS/Android: 시스템 공유 시트 (가장 안정적)
+  const nav = navigator as Navigator & {
+    canShare?: (data?: ShareData) => boolean;
+    share?: (data: ShareData) => Promise<void>;
+  };
+  try {
+    if (nav.share && nav.canShare?.({ files: [file] })) {
+      await nav.share({
+        files: [file],
+        title: `${schedule.targetName} ${schedule.year}-${pad(schedule.month)} 근무표`,
+        text: `근무 일정 ${count}건`,
+      });
+      return;
+    }
+  } catch (e) {
+    // 사용자가 공유 취소한 경우
+    if (e instanceof DOMException && e.name === "AbortError") return;
+  }
+
+  // 2) 데스크톱 / 공유 불가: Blob 다운로드
+  try {
+    triggerAnchorDownload(
+      new Blob([ics], { type: "text/calendar;charset=utf-8" }),
+      filename,
+    );
+    return;
+  } catch {
+    // fall through
+  }
+
+  // 3) 최후: data URL로 열기 (Safari가 캘린더 추가 제안)
+  const dataUrl = `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`;
+  window.open(dataUrl, "_blank", "noopener,noreferrer");
 }

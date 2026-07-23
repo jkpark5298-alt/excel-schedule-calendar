@@ -158,7 +158,9 @@ export default function ScheduleView({
           <button
             type="button"
             className="btn btn-sm btn-secondary"
-            onClick={() => downloadMonthIcs({ ...schedule, days })}
+            onClick={() => {
+              void downloadMonthIcs({ ...schedule, days });
+            }}
           >
             ICS
           </button>
