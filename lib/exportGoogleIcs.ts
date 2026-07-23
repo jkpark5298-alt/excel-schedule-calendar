@@ -35,10 +35,11 @@ function buildVEvent(day: DaySchedule, schedule: ParsedSchedule): string {
   const leader = day.isLeader ? " 리더" : "";
   const summary = escapeIcsText(`[${schedule.targetName}] ${shiftLabel(day)}${leader}`);
   const descParts = [shiftLabel(day) + leader];
-  if (day.sameShiftCoworkers.length) {
-    descParts.push(`같은 근무: ${day.sameShiftCoworkers.join(", ")}`);
+  const coworkers = day.sameShiftCoworkers ?? [];
+  if (coworkers.length) {
+    descParts.push(`같은 근무: ${coworkers.join(", ")}`);
   }
-  if (day.relatedCoworkers?.names.length) {
+  if (day.relatedCoworkers?.names?.length) {
     descParts.push(`${day.relatedCoworkers.label}: ${day.relatedCoworkers.names.join(", ")}`);
   }
   const description = escapeIcsText(descParts.join("\n"));
@@ -60,28 +61,47 @@ function buildVEvent(day: DaySchedule, schedule: ParsedSchedule): string {
   ].join("\r\n");
 }
 
-/** includeRest=false면 휴무 제외 */
-export function buildMonthIcs(schedule: ParsedSchedule, includeRest = false): string {
-  const days = schedule.days.filter((d) => includeRest || !isRestShift(d.myShift));
-  const events = days.map((d) => buildVEvent(d, schedule)).join("\r\n");
+/** 기본은 휴무 포함 — Google 가져오기 시 빈 파일 방지 */
+export function buildMonthIcs(schedule: ParsedSchedule, includeRest = true): string {
+  const days = (schedule.days ?? []).filter((d) => includeRest || !isRestShift(d.myShift));
+  const events = days.map((d) => buildVEvent(d, schedule));
+  const calName = escapeIcsText(
+    `${schedule.targetName} ${schedule.year}-${pad(schedule.month)} 근무표`,
+  );
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//Work Schedule Calendar//KO",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
-    events,
+    `X-WR-CALNAME:${calName}`,
+    ...events,
     "END:VCALENDAR",
   ].join("\r\n");
 }
 
-export function downloadMonthIcs(schedule: ParsedSchedule, includeRest = false): void {
+export function countIcsEvents(schedule: ParsedSchedule, includeRest = true): number {
+  return (schedule.days ?? []).filter((d) => includeRest || !isRestShift(d.myShift)).length;
+}
+
+export function downloadMonthIcs(schedule: ParsedSchedule, includeRest = true): void {
+  const count = countIcsEvents(schedule, includeRest);
+  if (count === 0) {
+    alert("내보낼 일정이 없습니다. 월간 일정이 있는지 확인해 주세요.");
+    return;
+  }
+
   const ics = buildMonthIcs(schedule, includeRest);
-  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+  // UTF-8 BOM: 일부 캘린더 앱이 한글 SUMMARY를 깨뜨리지 않도록
+  const blob = new Blob(["\uFEFF" + ics], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `근무표_${schedule.targetName}_${schedule.year}-${pad(schedule.month)}.ics`;
+  a.download = `schedule_${schedule.targetName}_${schedule.year}-${pad(schedule.month)}.ics`;
+  a.style.display = "none";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  a.remove();
+  // iOS/Safari: click 직후 revoke하면 빈 파일이 됨
+  window.setTimeout(() => URL.revokeObjectURL(url), 2500);
 }

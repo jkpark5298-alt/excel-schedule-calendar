@@ -6,6 +6,7 @@ import { BOARDING_SHIFT_OPTIONS } from "@/lib/shiftDisplay";
 import MergedMonthCalendar from "./MergedMonthCalendar";
 import MergedDaySkdPanel from "./MergedDaySkdPanel";
 import EditDayModal from "./EditDayModal";
+import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 
 const ZOOM_STEPS = [0.75, 0.85, 1, 1.1];
 
@@ -122,6 +123,24 @@ export default function DualScheduleView({
           >
             +
           </button>
+          {opsSchedule && (
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => downloadMonthIcs(opsSchedule)}
+            >
+              ICS {opsTarget}
+            </button>
+          )}
+          {boardingSchedule && (
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => downloadMonthIcs(boardingSchedule)}
+            >
+              ICS {boardingTarget}
+            </button>
+          )}
         </div>
       </div>
 
