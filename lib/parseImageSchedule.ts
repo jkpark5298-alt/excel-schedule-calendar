@@ -1,5 +1,7 @@
+import { createWorker } from "tesseract.js";
 import { DaySchedule, ParsedSchedule, ShiftCode, WorkerShift } from "@/types/schedule";
 import { normalizeShift } from "@/lib/shiftDisplay";
+import { parsePdfText } from "@/lib/parsePdfSchedule";
 
 const DOW_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -76,8 +78,65 @@ function extractJsonObject(text: string): VisionPayload {
   return JSON.parse(raw.slice(start, end + 1)) as VisionPayload;
 }
 
-/** OpenAI Vision으로 근무표 이미지 → ParsedSchedule */
-export async function parseScheduleImage(
+function rowsToSchedule(
+  rows: VisionRow[],
+  targetName: string,
+  year: number,
+  month: number,
+): ParsedSchedule {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const cleaned = rows
+    .map((r) => ({
+      name: String(r.name || "").trim(),
+      shifts: Array.isArray(r.shifts)
+        ? r.shifts.map((s) => String(s ?? "").trim())
+        : [],
+    }))
+    .filter((r) => /^[가-힣]{2,4}$/.test(r.name) && r.shifts.length >= 5);
+
+  if (!cleaned.length) {
+    throw new Error("이미지에서 직원 근무 행을 찾지 못했습니다. 더 선명한 사진을 올려 주세요.");
+  }
+
+  const target = cleaned.find((r) => r.name === targetName);
+  if (!target) {
+    const names = cleaned.map((r) => r.name).join(", ");
+    throw new Error(`이미지에서 "${targetName}" 행을 찾지 못했습니다. (발견: ${names})`);
+  }
+
+  const days: DaySchedule[] = [];
+  for (let i = 0; i < daysInMonth; i++) {
+    const date = i + 1;
+    const myShift = normalizeShift(target.shifts[i] || "");
+    days.push(
+      buildDaySchedule(
+        i,
+        date,
+        dowForDate(year, month, date),
+        myShift,
+        targetName,
+        cleaned,
+        i,
+      ),
+    );
+  }
+
+  for (let i = 0; i < days.length; i++) {
+    if (days[i].myShift !== "당") continue;
+    const nextDay = days[i + 1];
+    if (!nextDay) continue;
+    const nextA = nextDay.allWorkers
+      .filter((w) => w.name !== targetName && w.shift === "A")
+      .map((w) => w.name);
+    if (nextA.length) {
+      days[i].relatedCoworkers = { type: "A", names: nextA, label: "A(익일)" };
+    }
+  }
+
+  return { targetName, year, month, days };
+}
+
+async function parseWithOpenAI(
   buffer: Buffer,
   mimeType: string,
   targetName: string,
@@ -86,15 +145,11 @@ export async function parseScheduleImage(
 ): Promise<ParsedSchedule> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    throw new Error(
-      "이미지 근무표 인식에는 OPENAI_API_KEY가 필요합니다. Vercel 프로젝트 환경변수에 추가해 주세요.",
-    );
+    throw new Error("NO_OPENAI_KEY");
   }
 
   const daysInMonth = new Date(year, month, 0).getDate();
-  const b64 = buffer.toString("base64");
-  const dataUrl = `data:${mimeType};base64,${b64}`;
-
+  const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
   const prompt = `당신은 한국 항공사 CSM 월간 근무표 이미지를 읽는 파서입니다.
 이미지에서 직원별 일자 근무코드를 추출해 JSON만 반환하세요.
 
@@ -138,7 +193,8 @@ export async function parseScheduleImage(
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
-    throw new Error(`이미지 인식 API 실패 (${res.status}): ${errText.slice(0, 200)}`);
+    const err = new Error(`OPENAI_${res.status}:${errText.slice(0, 240)}`);
+    throw err;
   }
 
   const body = (await res.json()) as {
@@ -146,58 +202,70 @@ export async function parseScheduleImage(
   };
   const content = body.choices?.[0]?.message?.content;
   if (!content) throw new Error("이미지 인식 결과가 비어 있습니다.");
-
   const payload = extractJsonObject(content);
-  const rows = (payload.rows ?? [])
-    .map((r) => ({
-      name: String(r.name || "").trim(),
-      shifts: Array.isArray(r.shifts)
-        ? r.shifts.map((s) => String(s ?? "").trim())
-        : [],
-    }))
-    .filter((r) => /^[가-힣]{2,4}$/.test(r.name) && r.shifts.length >= 5);
+  return rowsToSchedule(payload.rows ?? [], targetName, year, month);
+}
 
-  if (!rows.length) {
-    throw new Error("이미지에서 직원 근무 행을 찾지 못했습니다. 더 선명한 사진을 올려 주세요.");
+async function parseWithTesseract(
+  buffer: Buffer,
+  targetName: string,
+  year: number,
+  month: number,
+): Promise<ParsedSchedule> {
+  const worker = await createWorker("kor+eng");
+  try {
+    const {
+      data: { text },
+    } = await worker.recognize(buffer);
+    if (!text || text.replace(/\s/g, "").length < 20) {
+      throw new Error("OCR 결과가 너무 짧습니다. 더 선명한 이미지를 올려 주세요.");
+    }
+    return parsePdfText(text, targetName, year, month);
+  } finally {
+    await worker.terminate().catch(() => undefined);
   }
+}
 
-  const target = rows.find((r) => r.name === targetName);
-  if (!target) {
-    const names = rows.map((r) => r.name).join(", ");
-    throw new Error(`이미지에서 "${targetName}" 행을 찾지 못했습니다. (발견: ${names})`);
-  }
+function isQuotaOrAuthError(message: string): boolean {
+  return (
+    message.includes("OPENAI_429") ||
+    message.includes("NO_OPENAI_KEY") ||
+    /quota|billing|insufficient_quota|401|429/i.test(message)
+  );
+}
 
-  const count = Math.min(daysInMonth, Math.max(target.shifts.length, daysInMonth));
-  const days: DaySchedule[] = [];
-  for (let i = 0; i < Math.min(count, daysInMonth); i++) {
-    const date = i + 1;
-    const myShift = normalizeShift(target.shifts[i] || "");
-    days.push(
-      buildDaySchedule(
-        i,
-        date,
-        dowForDate(year, month, date),
-        myShift,
-        targetName,
-        rows,
-        i,
-      ),
-    );
-  }
+/** 이미지 근무표 → ParsedSchedule (OpenAI Vision, 실패 시 Tesseract OCR) */
+export async function parseScheduleImage(
+  buffer: Buffer,
+  mimeType: string,
+  targetName: string,
+  year: number,
+  month: number,
+): Promise<ParsedSchedule> {
+  let openaiError: string | null = null;
 
-  for (let i = 0; i < days.length; i++) {
-    if (days[i].myShift !== "당") continue;
-    const nextDay = days[i + 1];
-    if (!nextDay) continue;
-    const nextA = nextDay.allWorkers
-      .filter((w) => w.name !== targetName && w.shift === "A")
-      .map((w) => w.name);
-    if (nextA.length) {
-      days[i].relatedCoworkers = { type: "A", names: nextA, label: "A(익일)" };
+  try {
+    return await parseWithOpenAI(buffer, mimeType, targetName, year, month);
+  } catch (e) {
+    openaiError = e instanceof Error ? e.message : String(e);
+    if (!isQuotaOrAuthError(openaiError) && !openaiError.startsWith("OPENAI_")) {
+      // Vision JSON parse failures: still try OCR fallback
     }
   }
 
-  return { targetName, year, month, days };
+  try {
+    return await parseWithTesseract(buffer, targetName, year, month);
+  } catch (e) {
+    const ocrError = e instanceof Error ? e.message : String(e);
+    if (openaiError && /429|quota|billing/i.test(openaiError)) {
+      throw new Error(
+        `OpenAI 사용량(쿼터)이 초과되어 이미지 고정밀 인식이 불가합니다. 대체 OCR도 실패했습니다: ${ocrError} Excel/PDF로 업로드하거나 OpenAI 결제(쿼터)를 충전한 뒤 다시 시도해 주세요.`,
+      );
+    }
+    throw new Error(
+      `이미지 근무표 인식에 실패했습니다. (${ocrError}) 선명한 PNG/JPG 또는 Excel/PDF를 사용해 주세요.`,
+    );
+  }
 }
 
 export function isImageFileName(name: string): boolean {

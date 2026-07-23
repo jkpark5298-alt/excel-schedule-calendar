@@ -84,8 +84,9 @@ export default function UploadModal({ targetName, year, month, onTargetNameChang
             <p className="text-slate-500 text-xs mt-1">.xlsx, .xls, .pdf, .png, .jpg</p>
           </div>
           {error && <div className="iphone-error">{error}</div>}
-          {loading && <div className="iphone-loading">파일 분석 중...</div>}
+          {loading && <div className="iphone-loading">파일 분석 중... (이미지는 최대 1~2분)</div>}
           <p className="iphone-hint">박종규(C/A/당) · 김현숙(B7/A5/P/D/P6) · 주/연→休</p>
+          <p className="iphone-hint">이미지는 PNG/JPG 권장 · OpenAI 쿼터 부족 시 OCR로 재시도</p>
           <p className="iphone-hint">지원 기간: {MIN_YEAR}년 {MIN_MONTH}월 ~ {MAX_YEAR}년 {MAX_MONTH}월</p>
         </div>
       </div>
