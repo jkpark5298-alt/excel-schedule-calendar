@@ -81,3 +81,73 @@ export async function extractPdfText(buffer: Buffer): Promise<string> {
     await parser.destroy();
   }
 }
+
+/** True when PDF text looks like a real roster (not a scanned image PDF). */
+export function isUsablePdfText(text: string): boolean {
+  const cleaned = text
+    .replace(/--\s*\d+\s+of\s+\d+\s*--/gi, "")
+    .replace(/\s+/g, "");
+  return cleaned.length >= 40;
+}
+
+function sniffBufferMime(data: Buffer): string {
+  if (data.length >= 3 && data[0] === 0xff && data[1] === 0xd8 && data[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (
+    data.length >= 8 &&
+    data[0] === 0x89 &&
+    data[1] === 0x50 &&
+    data[2] === 0x4e &&
+    data[3] === 0x47
+  ) {
+    return "image/png";
+  }
+  if (
+    data.length >= 12 &&
+    data.subarray(0, 4).toString("ascii") === "RIFF" &&
+    data.subarray(8, 12).toString("ascii") === "WEBP"
+  ) {
+    return "image/webp";
+  }
+  return "image/png";
+}
+
+export type PdfEmbeddedImage = {
+  buffer: Buffer;
+  mimeType: string;
+  width: number;
+  height: number;
+};
+
+/**
+ * Extract the largest embedded image from a PDF (common for camera/Kakao "PDF" saves).
+ */
+export async function extractLargestPdfImage(buffer: Buffer): Promise<PdfEmbeddedImage | null> {
+  await configurePdfWorker();
+  const { PDFParse } = await import("pdf-parse");
+  const parser = new PDFParse({ data: buffer });
+  try {
+    const result = await parser.getImage({ imageThreshold: 40, imageBuffer: true, imageDataUrl: false });
+    let best: PdfEmbeddedImage | null = null;
+    let bestArea = 0;
+    for (const page of result.pages) {
+      for (const img of page.images) {
+        if (!img.data?.length) continue;
+        const area = (img.width || 0) * (img.height || 0);
+        if (area < bestArea) continue;
+        const buf = Buffer.from(img.data);
+        best = {
+          buffer: buf,
+          mimeType: sniffBufferMime(buf),
+          width: img.width,
+          height: img.height,
+        };
+        bestArea = area;
+      }
+    }
+    return best;
+  } finally {
+    await parser.destroy();
+  }
+}

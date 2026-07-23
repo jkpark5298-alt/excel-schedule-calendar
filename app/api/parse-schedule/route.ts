@@ -271,9 +271,42 @@ export async function POST(req: NextRequest) {
         resultMonth,
       );
     } else if (kind === "pdf") {
-      const { extractPdfText } = await import("@/lib/pdfExtract");
+      const { extractLargestPdfImage, extractPdfText, isUsablePdfText } = await import(
+        "@/lib/pdfExtract"
+      );
       const text = await extractPdfText(buffer);
-      result = parsePdfText(text, targetName, resultYear, resultMonth);
+
+      if (isUsablePdfText(text)) {
+        try {
+          result = parsePdfText(text, targetName, resultYear, resultMonth);
+        } catch (textErr) {
+          // Text PDF that still fails (odd layout) → try embedded page image.
+          const embedded = await extractLargestPdfImage(buffer);
+          if (!embedded) throw textErr;
+          result = await parseScheduleImage(
+            embedded.buffer,
+            embedded.mimeType,
+            targetName,
+            resultYear,
+            resultMonth,
+          );
+        }
+      } else {
+        // Scanned / photo PDF (e.g. Kakao IMG_*.pdf) has almost no extractable text.
+        const embedded = await extractLargestPdfImage(buffer);
+        if (!embedded) {
+          throw new Error(
+            "스캔(이미지) PDF에서 근무표 이미지를 찾지 못했습니다. PNG/JPG로 다시 업로드해 주세요.",
+          );
+        }
+        result = await parseScheduleImage(
+          embedded.buffer,
+          embedded.mimeType,
+          targetName,
+          resultYear,
+          resultMonth,
+        );
+      }
     } else {
       result = await parseExcel(arrayBuffer, targetName, resultYear, resultMonth);
     }
