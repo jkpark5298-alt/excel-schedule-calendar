@@ -12,6 +12,32 @@ import {
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
+type UploadKind = "image" | "pdf" | "excel";
+
+function detectUploadKind(name: string, mime: string, buf: Buffer): UploadKind {
+  if (buf.length >= 4 && buf.subarray(0, 4).toString("ascii") === "%PDF") return "pdf";
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return "image";
+  if (
+    buf.length >= 8 &&
+    buf[0] === 0x89 &&
+    buf[1] === 0x50 &&
+    buf[2] === 0x4e &&
+    buf[3] === 0x47
+  ) {
+    return "image";
+  }
+  if (
+    buf.length >= 12 &&
+    buf.subarray(0, 4).toString("ascii") === "RIFF" &&
+    buf.subarray(8, 12).toString("ascii") === "WEBP"
+  ) {
+    return "image";
+  }
+  if (isImageFileName(name) || String(mime || "").startsWith("image/")) return "image";
+  if (/\.pdf$/i.test(name) || mime === "application/pdf") return "pdf";
+  return "excel";
+}
+
 function cellText(cell: ExcelJS.Cell): string {
   const v = cell.value;
   if (v == null) return "";
@@ -232,21 +258,21 @@ export async function POST(req: NextRequest) {
     const resultMonth = monthParam >= 1 && monthParam <= 12 ? monthParam : now.getMonth() + 1;
 
     const arrayBuffer = await file.arrayBuffer();
-    const isPdf = file.name.match(/\.pdf$/i);
-    const isImage = isImageFileName(file.name) || String(file.type || "").startsWith("image/");
+    const buffer = Buffer.from(arrayBuffer);
+    const kind = detectUploadKind(file.name, file.type, buffer);
 
     let result: ParsedSchedule;
-    if (isImage) {
+    if (kind === "image") {
       result = await parseScheduleImage(
-        Buffer.from(arrayBuffer),
+        buffer,
         sniffImageMime(file.name, file.type),
         targetName,
         resultYear,
         resultMonth,
       );
-    } else if (isPdf) {
+    } else if (kind === "pdf") {
       const { extractPdfText } = await import("@/lib/pdfExtract");
-      const text = await extractPdfText(Buffer.from(arrayBuffer));
+      const text = await extractPdfText(buffer);
       result = parsePdfText(text, targetName, resultYear, resultMonth);
     } else {
       result = await parseExcel(arrayBuffer, targetName, resultYear, resultMonth);
