@@ -9,6 +9,7 @@ import EditDayModal from "./EditDayModal";
 import DaySkdPanel from "./DaySkdPanel";
 import PrintView from "./PrintView";
 import PinHelpBanner from "./PinHelpBanner";
+import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 
 interface Props {
   schedule: ParsedSchedule;
@@ -154,6 +155,13 @@ export default function ScheduleView({
           <button type="button" className="btn btn-sm btn-secondary" onClick={onBackup}>백업</button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => restoreInputRef.current?.click()}>복원</button>
           <button type="button" className="btn btn-sm btn-pdf" onClick={handlePDF}>PDF</button>
+          <button
+            type="button"
+            className="btn btn-sm btn-secondary"
+            onClick={() => downloadMonthIcs({ ...schedule, days })}
+          >
+            ICS
+          </button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={onReupload} disabled={isLocked}>
             {boardingMode ? "SKD 수정" : "재업로드"}
           </button>
