@@ -91,16 +91,13 @@ export function countIcsEvents(schedule: ParsedSchedule, includeRest = true): nu
   return validDays(schedule, includeRest).length;
 }
 
-function icsBytes(ics: string): Uint8Array {
-  return new TextEncoder().encode(ics);
-}
-
 function icsFilename(schedule: ParsedSchedule): string {
   return `schedule_${schedule.year}-${pad(schedule.month)}.ics`;
 }
 
-function triggerAnchorDownload(bytes: Uint8Array, filename: string): void {
-  const blob = new Blob([bytes], { type: "text/calendar;charset=utf-8" });
+function triggerAnchorDownload(ics: string, filename: string): void {
+  // string → Blob (Uint8Array BlobPart는 TS DOM lib와 충돌)
+  const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -115,7 +112,6 @@ function triggerAnchorDownload(bytes: Uint8Array, filename: string): void {
 
 /**
  * iPhone: Web Share / Desktop: 파일 다운로드
- * 바이트는 TextEncoder UTF-8로 고정 (빈 파일·인코딩 깨짐 방지)
  */
 export async function downloadMonthIcs(
   schedule: ParsedSchedule,
@@ -128,9 +124,8 @@ export async function downloadMonthIcs(
   }
 
   const ics = buildMonthIcs(schedule, includeRest);
-  const bytes = icsBytes(ics);
   const filename = icsFilename(schedule);
-  const file = new File([bytes], filename, { type: "text/calendar;charset=utf-8" });
+  const file = new File([ics], filename, { type: "text/calendar;charset=utf-8" });
 
   const nav = navigator as Navigator & {
     canShare?: (data?: ShareData) => boolean;
@@ -155,9 +150,8 @@ export async function downloadMonthIcs(
     }
   }
 
-  triggerAnchorDownload(bytes, filename);
+  triggerAnchorDownload(ics, filename);
   if (!isMobile) {
-    // Google Calendar 가져오기 안내
     window.setTimeout(() => {
       alert(
         `ICS ${count}건 저장됨 (${filename})\n\nGoogle Calendar → 설정 → 가져오기 → 이 파일을 선택하세요.`,
