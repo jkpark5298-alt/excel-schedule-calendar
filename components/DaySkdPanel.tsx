@@ -2,7 +2,14 @@
 
 import { DaySchedule } from "@/types/schedule";
 import ShiftBadge from "./ShiftBadge";
-import { isBoardingDayLayout, isRestShift, skdPillBottomLabel, skdPillBoardingLabel, skdPillLabel, shiftClass } from "@/lib/shiftDisplay";
+import {
+  isBoardingDayLayout,
+  isRestShift,
+  skdPillBottomLines,
+  skdPillBoardingLabel,
+  skdPillTopLines,
+  shiftClass,
+} from "@/lib/shiftDisplay";
 
 interface Props {
   day: DaySchedule;
@@ -20,7 +27,8 @@ export default function DaySkdPanel({
 }: Props) {
   const isRest = isRestShift(day.myShift);
   const boarding = boardingMode && isBoardingDayLayout(allDays.length ? allDays : [day], day.myShift);
-  const bottomLabel = !boarding ? skdPillBottomLabel(day) : null;
+  const topLines = boarding ? [skdPillBoardingLabel(day)] : skdPillTopLines(day);
+  const bottomLines = !boarding ? skdPillBottomLines(day) : [];
 
   return (
     <div className="day-skd-panel safe-bottom">
@@ -38,13 +46,23 @@ export default function DaySkdPanel({
       <div className="day-skd-panel-body">
         <div className="day-skd-main">
           <ShiftBadge shift={day.myShift} isLeader={day.isLeader} size="lg" />
-          <span className="day-skd-display-label">
-            {boarding ? skdPillBoardingLabel(day) : skdPillLabel(day)}
-          </span>
+          <div className="day-skd-display-stack">
+            {topLines.map((line, i) => (
+              <span key={`t-${i}`} className="day-skd-display-label">
+                {line}
+              </span>
+            ))}
+          </div>
         </div>
 
-        {bottomLabel && (
-          <div className="ios-skd-pill ios-skd-pill-sub-names ios-skd-names-panel">{bottomLabel}</div>
+        {bottomLines.length > 0 && (
+          <div className="ios-skd-pill ios-skd-pill-sub-names ios-skd-names-panel ios-skd-pill-stack">
+            {bottomLines.map((line, i) => (
+              <span key={`b-${i}`} className="ios-skd-line">
+                {line}
+              </span>
+            ))}
+          </div>
         )}
 
         {!isRest && !boarding && day.sameShiftCoworkers.length > 0 && (

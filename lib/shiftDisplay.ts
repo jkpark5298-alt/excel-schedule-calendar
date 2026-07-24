@@ -88,24 +88,46 @@ export function skdPillBoardingLabel(day: DaySchedule): string {
   return `${leader}${formatShiftDisplay(day.myShift)}`.slice(0, 24);
 }
 
-/** Main pill: 👍A/이영식 (탑승수속이면 사용 안 함) */
-export function skdPillLabel(day: DaySchedule): string {
+/** 상단 첫째 칸 — TYPE만 (👍C / 당 …) */
+export function skdPillTypeLabel(day: DaySchedule): string {
   const leader = day.isLeader ? "👍" : "";
-  const display = formatShiftDisplay(day.myShift);
-  let label = `${leader}${display}`;
-  if (!isRestShift(day.myShift) && day.sameShiftCoworkers.length > 0) {
-    label += `/${day.sameShiftCoworkers.join("/")}`;
-  }
-  return label;
+  return `${leader}${formatShiftDisplay(day.myShift)}`;
 }
 
-/** 하단 pill (당/C/A 공통): 검정 배경 — 당 홍길동/김철수, C 정찬호/임성우 */
-export function skdPillBottomLabel(day: DaySchedule): string | null {
+/** 상단 다음 칸들 — 같은 근무 이름 (한 칸에 1명) */
+export function skdPillCoworkerLines(day: DaySchedule): string[] {
+  if (isRestShift(day.myShift)) return [];
+  return [...(day.sameShiftCoworkers ?? [])];
+}
+
+/**
+ * 상단 표시용 줄: [TYPE, 이름1, 이름2…]
+ * 캘린더: 첫째 칸 TYPE, 다음 칸 이름
+ */
+export function skdPillTopLines(day: DaySchedule): string[] {
+  return [skdPillTypeLabel(day), ...skdPillCoworkerLines(day)];
+}
+
+/**
+ * 검정 하단 줄: 첫째 줄 "TYPE / 이름1", 이후 이름만 한 줄씩
+ */
+export function skdPillBottomLines(day: DaySchedule): string[] {
   const rc = day.relatedCoworkers;
-  if (!rc || rc.names.length === 0) return null;
-  const names = rc.names.join("/");
-  const prefix = rc.label || rc.type;
-  return `${prefix} ${names}`;
+  if (!rc || rc.names.length === 0) return [];
+  const prefix = rc.label || String(rc.type);
+  const [first, ...rest] = rc.names;
+  return [`${prefix} / ${first}`, ...rest];
+}
+
+/** Main pill (단일 문자열, 인쇄 등 호환) */
+export function skdPillLabel(day: DaySchedule): string {
+  return skdPillTopLines(day).join("\n");
+}
+
+/** 하단 pill 단일 문자열 (호환) */
+export function skdPillBottomLabel(day: DaySchedule): string | null {
+  const lines = skdPillBottomLines(day);
+  return lines.length ? lines.join("\n") : null;
 }
 
 /** 리더 날짜 입력 파싱 — 예: "1,3,5" */

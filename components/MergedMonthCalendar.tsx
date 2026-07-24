@@ -6,11 +6,10 @@ import { buildMergedMonthGrid } from "@/lib/mergeMonthGrid";
 import {
   DOW_KO,
   skdPillClass,
-  skdPillLabel,
-  skdPillBottomLabel,
   skdPillBoardingLabel,
 } from "@/lib/monthGrid";
 import { usePinchZoom } from "@/lib/usePinchZoom";
+import OpsSkdPills from "./OpsSkdPills";
 
 interface Props {
   year: number;
@@ -29,24 +28,6 @@ interface Props {
     opsDay: DaySchedule | null;
     boardingDay: DaySchedule | null;
   }) => void;
-}
-
-function OpsPills({ day }: { day: DaySchedule }) {
-  const bottomLabel = skdPillBottomLabel(day);
-  return (
-    <>
-      <div className="ios-day-slot ios-day-slot-top ios-day-slot-lines-2">
-        <div className={`ios-skd-pill ios-skd-pill-multiline ${day.isLeader ? "ios-skd-pill-leader" : ""} ${skdPillClass(day.myShift)}`}>
-          {skdPillLabel(day)}
-        </div>
-      </div>
-      <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-lines-2">
-        {bottomLabel && (
-          <div className="ios-skd-pill ios-skd-pill-sub-names ios-skd-pill-multiline">{bottomLabel}</div>
-        )}
-      </div>
-    </>
-  );
 }
 
 function BoardingPill({ day }: { day: DaySchedule }) {
@@ -140,7 +121,7 @@ export default function MergedMonthCalendar({
                     <div className="ios-day-events merged-day-events">
                       <div className="merged-ops-block">
                         {cell.opsDay ? (
-                          <OpsPills day={cell.opsDay} />
+                          <OpsSkdPills day={cell.opsDay} />
                         ) : cell.inMonth ? (
                           <>
                             <div className="ios-day-slot ios-day-slot-top">

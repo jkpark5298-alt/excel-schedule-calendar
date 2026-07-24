@@ -6,12 +6,11 @@ import {
   DOW_KO,
   buildMonthGrid,
   skdPillClass,
-  skdPillLabel,
-  skdPillBottomLabel,
   skdPillBoardingLabel,
   isBoardingDayLayout,
 } from "@/lib/monthGrid";
 import { usePinchZoom } from "@/lib/usePinchZoom";
+import OpsSkdPills from "./OpsSkdPills";
 
 interface Props {
   year: number;
@@ -67,7 +66,6 @@ export default function IosMonthCalendar({
                 const sel = isSelected(cell);
                 const schedule = cell.schedule;
                 const boarding = schedule ? isBoardingDayLayout(days, schedule.myShift) : false;
-                const bottomLabel = schedule && !boarding ? skdPillBottomLabel(schedule) : null;
                 const clickable = hasSkd || (cell.inMonth && !!onEmptyDayClick);
 
                 return (
@@ -94,20 +92,12 @@ export default function IosMonthCalendar({
                     </span>
                     <div className={`ios-day-events ${boarding ? "ios-day-events-boarding" : "ios-day-events-ops"}`}>
                       {!boarding ? (
-                        <>
-                          <div className="ios-day-slot ios-day-slot-top ios-day-slot-lines-2">
-                            {schedule && (
-                              <div className={`ios-skd-pill ios-skd-pill-multiline ${schedule.isLeader ? "ios-skd-pill-leader" : ""} ${skdPillClass(schedule.myShift)}`}>
-                                {skdPillLabel(schedule)}
-                              </div>
-                            )}
-                          </div>
-                          <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-lines-2">
-                            {bottomLabel && (
-                              <div className="ios-skd-pill ios-skd-pill-sub-names ios-skd-pill-multiline">{bottomLabel}</div>
-                            )}
-                          </div>
-                        </>
+                        schedule ? <OpsSkdPills day={schedule} /> : (
+                          <>
+                            <div className="ios-day-slot ios-day-slot-top ios-day-slot-lines-2" />
+                            <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-lines-2" />
+                          </>
+                        )
                       ) : (
                         <>
                           <div className="ios-day-slot ios-day-slot-spacer" aria-hidden="true" />

@@ -6,9 +6,9 @@ import {
   isBoardingSchedule,
   isBoardingDayLayout,
   isRestShift,
-  skdPillBottomLabel,
+  skdPillBottomLines,
   skdPillBoardingLabel,
-  skdPillLabel,
+  skdPillTopLines,
   shiftClass,
 } from "@/lib/shiftDisplay";
 
@@ -33,7 +33,8 @@ function PersonSection({ name, day, allDays, locked, onEdit, onDelete }: PersonS
 
   const boardingMode = isBoardingSchedule(allDays);
   const boarding = boardingMode && isBoardingDayLayout(allDays, day.myShift);
-  const bottomLabel = !boarding ? skdPillBottomLabel(day) : null;
+  const topLines = boarding ? [skdPillBoardingLabel(day)] : skdPillTopLines(day);
+  const bottomLines = !boarding ? skdPillBottomLines(day) : [];
   const isRest = isRestShift(day.myShift);
 
   return (
@@ -41,13 +42,23 @@ function PersonSection({ name, day, allDays, locked, onEdit, onDelete }: PersonS
       <h4 className="merged-panel-person">{name}</h4>
       <div className="day-skd-main">
         <ShiftBadge shift={day.myShift} isLeader={day.isLeader} size="lg" />
-        <span className="day-skd-display-label">
-          {boarding ? skdPillBoardingLabel(day) : skdPillLabel(day)}
-        </span>
+        <div className="day-skd-display-stack">
+          {topLines.map((line, i) => (
+            <span key={`t-${i}`} className="day-skd-display-label">
+              {line}
+            </span>
+          ))}
+        </div>
       </div>
 
-      {bottomLabel && (
-        <div className="ios-skd-pill ios-skd-pill-sub-names ios-skd-names-panel">{bottomLabel}</div>
+      {bottomLines.length > 0 && (
+        <div className="ios-skd-pill ios-skd-pill-sub-names ios-skd-names-panel ios-skd-pill-stack">
+          {bottomLines.map((line, i) => (
+            <span key={`b-${i}`} className="ios-skd-line">
+              {line}
+            </span>
+          ))}
+        </div>
       )}
 
       {!isRest && !boarding && day.sameShiftCoworkers.length > 0 && (
