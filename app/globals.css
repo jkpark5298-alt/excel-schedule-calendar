@@ -1324,7 +1324,7 @@ body {
   }
 
   .merged-day-cell {
-    --ios-day-cell-h: 144px;
+    --ios-day-cell-h: 156px;
   }
 
   .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) { font-size: 10px; }
@@ -1424,13 +1424,16 @@ body {
 .merged-boarding-block {
   display: flex;
   flex-direction: column;
-  flex: 0 0 var(--ios-day-slot-h);
-  min-height: var(--ios-day-slot-h);
-  max-height: var(--ios-day-slot-h);
+  flex: 0 0 auto;
+  min-height: 36px;
   margin-top: auto;
   padding-top: 2px;
   border-top: 1px dashed #e5e5ea;
   overflow: hidden;
+}
+
+.merged-boarding-block .ios-skd-pill-boarding-dual {
+  min-height: 34px;
 }
 
 .merged-empty-tag {
