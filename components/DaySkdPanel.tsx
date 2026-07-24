@@ -6,7 +6,7 @@ import {
   isBoardingDayLayout,
   isRestShift,
   skdPillBottomLines,
-  skdPillBoardingLabel,
+  skdPillBoardingLines,
   skdPillTopLines,
   shiftClass,
 } from "@/lib/shiftDisplay";
@@ -27,7 +27,7 @@ export default function DaySkdPanel({
 }: Props) {
   const isRest = isRestShift(day.myShift);
   const boarding = boardingMode && isBoardingDayLayout(allDays.length ? allDays : [day], day.myShift);
-  const topLines = boarding ? [skdPillBoardingLabel(day)] : skdPillTopLines(day);
+  const topLines = boarding ? skdPillBoardingLines(day) : skdPillTopLines(day);
   const bottomLines = !boarding ? skdPillBottomLines(day) : [];
 
   return (

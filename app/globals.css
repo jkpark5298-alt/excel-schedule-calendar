@@ -1043,6 +1043,39 @@ body {
   line-height: 1.2;
 }
 
+.ios-skd-pill-boarding-dual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.15;
+  padding: 2px 3px;
+  white-space: normal;
+  height: 100%;
+}
+
+.ios-skd-boarding-line {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.ios-skd-boarding-line:first-child {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.ios-skd-boarding-line:nth-child(2) {
+  font-size: 11px;
+  font-weight: 700;
+  opacity: 0.95;
+}
+
 .ios-skd-pill {
   line-height: 1.25;
   padding: 1px 3px;
@@ -1479,6 +1512,18 @@ body {
 
   .merged-day-cell .ios-skd-pill-boarding {
     font-size: 8px;
+  }
+
+  .merged-day-cell .ios-skd-pill-boarding-dual {
+    font-size: 12px;
+  }
+
+  .merged-day-cell .ios-skd-pill-boarding-dual .ios-skd-boarding-line:first-child {
+    font-size: 13px;
+  }
+
+  .merged-day-cell .ios-skd-pill-boarding-dual .ios-skd-boarding-line:nth-child(2) {
+    font-size: 11px;
   }
 }
 

@@ -7,7 +7,7 @@ import {
   isBoardingDayLayout,
   isRestShift,
   skdPillBottomLines,
-  skdPillBoardingLabel,
+  skdPillBoardingLines,
   skdPillTopLines,
   shiftClass,
 } from "@/lib/shiftDisplay";
@@ -33,7 +33,7 @@ function PersonSection({ name, day, allDays, locked, onEdit, onDelete }: PersonS
 
   const boardingMode = isBoardingSchedule(allDays);
   const boarding = boardingMode && isBoardingDayLayout(allDays, day.myShift);
-  const topLines = boarding ? [skdPillBoardingLabel(day)] : skdPillTopLines(day);
+  const topLines = boarding ? skdPillBoardingLines(day) : skdPillTopLines(day);
   const bottomLines = !boarding ? skdPillBottomLines(day) : [];
   const isRest = isRestShift(day.myShift);
 

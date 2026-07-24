@@ -84,8 +84,18 @@ export function skdPillClass(shift: string): string {
 
 /** 탑승수속 SKD — 셀 하단 표기: B7(11~20) */
 export function skdPillBoardingLabel(day: DaySchedule): string {
+  return skdPillBoardingLines(day).join(" ");
+}
+
+/** 탑승: TYPE / 시간 두 줄 — ["B7", "11~20"] */
+export function skdPillBoardingLines(day: DaySchedule): string[] {
   const leader = day.isLeader ? "👍" : "";
-  return `${leader}${formatShiftDisplay(day.myShift)}`.slice(0, 24);
+  const timed = SHIFT_TIME_LABELS[day.myShift];
+  if (timed) {
+    const m = timed.match(/^([^(]+)\((.+)\)$/);
+    if (m) return [`${leader}${m[1].trim()}`, m[2].trim()];
+  }
+  return [`${leader}${formatShiftDisplay(day.myShift)}`];
 }
 
 /** 상단 첫째 칸 — TYPE만 (👍C / 당 …) */
@@ -101,11 +111,19 @@ export function skdPillCoworkerLines(day: DaySchedule): string[] {
 }
 
 /**
- * 상단 표시용 줄: [TYPE, 이름1, 이름2…]
- * 캘린더: 첫째 칸 TYPE, 다음 칸 이름
+ * 상단 표시용 줄
+ * - 리더: [TYPE, 이름1, 이름2…] 칸 분리
+ * - 비리더: ["C/이영식"] 기존 한 줄
  */
 export function skdPillTopLines(day: DaySchedule): string[] {
-  return [skdPillTypeLabel(day), ...skdPillCoworkerLines(day)];
+  if (day.isLeader) {
+    return [skdPillTypeLabel(day), ...skdPillCoworkerLines(day)];
+  }
+  const display = formatShiftDisplay(day.myShift);
+  if (isRestShift(day.myShift) || day.sameShiftCoworkers.length === 0) {
+    return [display];
+  }
+  return [`${display}/${day.sameShiftCoworkers.join("/")}`];
 }
 
 /**

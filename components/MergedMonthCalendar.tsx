@@ -6,8 +6,8 @@ import { buildMergedMonthGrid } from "@/lib/mergeMonthGrid";
 import {
   DOW_KO,
   skdPillClass,
-  skdPillBoardingLabel,
 } from "@/lib/monthGrid";
+import { skdPillBoardingLines } from "@/lib/shiftDisplay";
 import { usePinchZoom } from "@/lib/usePinchZoom";
 import OpsSkdPills from "./OpsSkdPills";
 
@@ -30,10 +30,16 @@ interface Props {
   }) => void;
 }
 
+/** 합쳐보기 — 김현숙 TYPE / 시간 두 줄, 크게 */
 function BoardingPill({ day }: { day: DaySchedule }) {
+  const lines = skdPillBoardingLines(day);
   return (
-    <div className={`ios-skd-pill ios-skd-pill-boarding ${skdPillClass(day.myShift)}`}>
-      {skdPillBoardingLabel(day)}
+    <div className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ${skdPillClass(day.myShift)}`}>
+      {lines.map((line, i) => (
+        <span key={`${i}-${line}`} className="ios-skd-boarding-line">
+          {line}
+        </span>
+      ))}
     </div>
   );
 }
