@@ -1066,13 +1066,13 @@ body {
 }
 
 .ios-skd-boarding-line:first-child {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 900;
 }
 
 .ios-skd-boarding-line:nth-child(2) {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   opacity: 0.95;
 }
 
@@ -1522,11 +1522,11 @@ body {
   }
 
   .merged-day-cell .ios-skd-pill-boarding-dual .ios-skd-boarding-line:first-child {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .merged-day-cell .ios-skd-pill-boarding-dual .ios-skd-boarding-line:nth-child(2) {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 

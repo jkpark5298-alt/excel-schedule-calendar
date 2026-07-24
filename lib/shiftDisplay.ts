@@ -84,16 +84,24 @@ export function skdPillClass(shift: string): string {
 
 /** 탑승수속 SKD — 셀 하단 표기: B7(11~20) */
 export function skdPillBoardingLabel(day: DaySchedule): string {
-  return skdPillBoardingLines(day).join(" ");
+  return skdPillBoardingLines(day).join("");
 }
 
-/** 탑승: TYPE / 시간 두 줄 — ["B7", "11~20"] */
+/**
+ * 합쳐보기 김현숙: 첫째 줄 TYPE+시작~, 둘째 줄 종료)
+ * 예) A5(05:40~ / 14:40)
+ */
 export function skdPillBoardingLines(day: DaySchedule): string[] {
   const leader = day.isLeader ? "👍" : "";
   const timed = SHIFT_TIME_LABELS[day.myShift];
   if (timed) {
-    const m = timed.match(/^([^(]+)\((.+)\)$/);
-    if (m) return [`${leader}${m[1].trim()}`, m[2].trim()];
+    const tilde = timed.indexOf("~");
+    if (tilde >= 0) {
+      return [
+        `${leader}${timed.slice(0, tilde + 1)}`,
+        timed.slice(tilde + 1),
+      ];
+    }
   }
   return [`${leader}${formatShiftDisplay(day.myShift)}`];
 }
