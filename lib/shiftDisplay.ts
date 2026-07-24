@@ -109,14 +109,14 @@ export function skdPillTopLines(day: DaySchedule): string[] {
 }
 
 /**
- * 검정 하단 줄: 첫째 줄 "TYPE / 이름1", 이후 이름만 한 줄씩
+ * 검정 하단 줄: 첫째 줄 TYPE만, 이후 이름 1명씩 한 줄
+ * 예) C / 김지성 / 정찬호
  */
 export function skdPillBottomLines(day: DaySchedule): string[] {
   const rc = day.relatedCoworkers;
   if (!rc || rc.names.length === 0) return [];
   const prefix = rc.label || String(rc.type);
-  const [first, ...rest] = rc.names;
-  return [`${prefix} / ${first}`, ...rest];
+  return [prefix, ...rc.names];
 }
 
 /** Main pill (단일 문자열, 인쇄 등 호환) */

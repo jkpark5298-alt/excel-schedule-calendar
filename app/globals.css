@@ -1094,7 +1094,7 @@ body {
   text-overflow: unset;
   overflow: hidden;
   height: 100%;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .ios-skd-line {
@@ -1103,6 +1103,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
   min-width: 0;
+  flex: 0 0 auto;
 }
 
 .ios-skd-names-panel {
@@ -1259,12 +1260,12 @@ body {
   .ios-day-cell {
     --ios-day-cell-h: 88px;
     --ios-day-slot-h: 22px;
-    --ios-day-slot-h-2: 34px;
+    --ios-day-slot-h-2: 40px;
   }
 
-  /* iPhone — 운항 캘린더: 상·하단 TYPE/이름 분리 */
+  /* iPhone — 운항 캘린더: TYPE + 이름 줄 분리 */
   .ios-day-cell:not(.boarding-skd) {
-    --ios-day-cell-h: 108px;
+    --ios-day-cell-h: 118px;
   }
 
   .ios-day-slot-lines-2 {
@@ -1279,7 +1280,7 @@ body {
     overflow: hidden;
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
+    -webkit-line-clamp: 3;
     line-height: 1.15;
     word-break: break-all;
     height: 100%;
@@ -1290,7 +1291,7 @@ body {
   }
 
   .merged-day-cell {
-    --ios-day-cell-h: 132px;
+    --ios-day-cell-h: 144px;
   }
 
   .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) { font-size: 10px; }
