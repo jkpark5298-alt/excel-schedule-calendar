@@ -10,6 +10,7 @@ import {
   skdPillBottomLabel,
   skdPillBoardingLabel,
 } from "@/lib/monthGrid";
+import { usePinchZoom } from "@/lib/usePinchZoom";
 
 interface Props {
   year: number;
@@ -19,6 +20,7 @@ interface Props {
   opsTarget: string;
   boardingTarget: string;
   zoom?: number;
+  onZoomChange?: (zoom: number) => void;
   selectedDate?: number | null;
   onSelectCell?: (cell: {
     date: number;
@@ -63,11 +65,13 @@ export default function MergedMonthCalendar({
   opsTarget,
   boardingTarget,
   zoom = 1,
+  onZoomChange,
   selectedDate = null,
   onSelectCell,
 }: Props) {
   const now = new Date();
   const today = { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+  const { pinchRef, isPinching } = usePinchZoom(zoom, onZoomChange ?? (() => {}));
 
   const { weeks } = useMemo(
     () => buildMergedMonthGrid(year, month, opsDays, boardingDays, today),
@@ -75,7 +79,11 @@ export default function MergedMonthCalendar({
   );
 
   return (
-    <div className="ios-month-zoom-wrap" style={{ transform: `scale(${zoom})`, width: `${100 / zoom}%` }}>
+    <div
+      ref={onZoomChange ? pinchRef : undefined}
+      className={`ios-month-zoom-wrap${isPinching ? " is-pinching" : ""}`}
+      style={{ transform: `scale(${zoom})`, width: `${100 / zoom}%` }}
+    >
       <div className="ios-month-wrap merged-month-wrap">
         <div className="ios-month-titlebar">
           <span className="ios-month-title-left">{month}월</span>

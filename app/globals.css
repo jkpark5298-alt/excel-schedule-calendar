@@ -324,6 +324,12 @@ body {
   transform-origin: top center;
   transition: transform 0.2s ease;
   margin: 0 auto;
+  touch-action: pan-x pan-y;
+}
+
+.ios-month-zoom-wrap.is-pinching {
+  transition: none;
+  touch-action: none;
 }
 
 .btn-sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }

@@ -11,6 +11,7 @@ import {
   skdPillBoardingLabel,
   isBoardingDayLayout,
 } from "@/lib/monthGrid";
+import { usePinchZoom } from "@/lib/usePinchZoom";
 
 interface Props {
   year: number;
@@ -18,15 +19,17 @@ interface Props {
   days: DaySchedule[];
   selected: DaySchedule | null;
   zoom?: number;
+  onZoomChange?: (zoom: number) => void;
   onSelect: (day: DaySchedule | null) => void;
   onEmptyDayClick?: (date: number, dayOfWeek: string) => void;
 }
 
 export default function IosMonthCalendar({
-  year, month, days, selected, zoom = 1, onSelect, onEmptyDayClick,
+  year, month, days, selected, zoom = 1, onZoomChange, onSelect, onEmptyDayClick,
 }: Props) {
   const now = new Date();
   const today = { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
+  const { pinchRef, isPinching } = usePinchZoom(zoom, onZoomChange ?? (() => {}));
 
   const { weeks } = useMemo(
     () => buildMonthGrid(year, month, days, today),
@@ -37,7 +40,11 @@ export default function IosMonthCalendar({
     selected && cell.schedule && selected.orderIndex === cell.schedule.orderIndex;
 
   return (
-    <div className="ios-month-zoom-wrap" style={{ transform: `scale(${zoom})`, width: `${100 / zoom}%` }}>
+    <div
+      ref={onZoomChange ? pinchRef : undefined}
+      className={`ios-month-zoom-wrap${isPinching ? " is-pinching" : ""}`}
+      style={{ transform: `scale(${zoom})`, width: `${100 / zoom}%` }}
+    >
       <div className="ios-month-wrap">
         <div className="ios-month-titlebar">
           <span className="ios-month-title-left">{month}월</span>

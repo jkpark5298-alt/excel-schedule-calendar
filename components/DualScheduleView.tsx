@@ -7,8 +7,7 @@ import MergedMonthCalendar from "./MergedMonthCalendar";
 import MergedDaySkdPanel from "./MergedDaySkdPanel";
 import EditDayModal from "./EditDayModal";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
-
-const ZOOM_STEPS = [0.75, 0.85, 1, 1.1];
+import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
 
 export interface MergedSelectedDay {
   date: number;
@@ -42,14 +41,15 @@ export default function DualScheduleView({
   onOpsScheduleUpdate,
   onBoardingScheduleUpdate,
 }: Props) {
-  const [zoomIndex, setZoomIndex] = useState(2);
+  const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [selected, setSelected] = useState<MergedSelectedDay | null>(null);
   const [editState, setEditState] = useState<{ target: "ops" | "boarding"; day: DaySchedule } | null>(null);
 
-  const zoom = ZOOM_STEPS[zoomIndex];
   const hasAny = !!opsSchedule || !!boardingSchedule;
   const opsDays = opsSchedule?.days ?? [];
   const boardingDays = boardingSchedule?.days ?? [];
+  const zoomOut = () => setZoom((z) => clampZoom(z - ZOOM_STEP));
+  const zoomIn = () => setZoom((z) => clampZoom(z + ZOOM_STEP));
 
   const refreshSelected = useCallback((nextOps: DaySchedule[], nextBoarding: DaySchedule[]) => {
     setSelected((prev) => {
@@ -109,8 +109,8 @@ export default function DualScheduleView({
           <button
             type="button"
             className="btn btn-sm btn-secondary"
-            onClick={() => setZoomIndex((i) => Math.max(0, i - 1))}
-            disabled={zoomIndex === 0}
+            onClick={zoomOut}
+            disabled={zoom <= ZOOM_MIN}
           >
             −
           </button>
@@ -118,8 +118,8 @@ export default function DualScheduleView({
           <button
             type="button"
             className="btn btn-sm btn-secondary"
-            onClick={() => setZoomIndex((i) => Math.min(ZOOM_STEPS.length - 1, i + 1))}
-            disabled={zoomIndex === ZOOM_STEPS.length - 1}
+            onClick={zoomIn}
+            disabled={zoom >= ZOOM_MAX}
           >
             +
           </button>
@@ -162,6 +162,7 @@ export default function DualScheduleView({
           opsTarget={opsTarget}
           boardingTarget={boardingTarget}
           zoom={zoom}
+          onZoomChange={setZoom}
           selectedDate={selected?.date ?? null}
           onSelectCell={(cell) => {
             if (!cell.inMonth || (!cell.opsDay && !cell.boardingDay)) return;

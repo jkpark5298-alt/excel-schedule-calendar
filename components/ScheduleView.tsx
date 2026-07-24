@@ -10,6 +10,7 @@ import DaySkdPanel from "./DaySkdPanel";
 import PrintView from "./PrintView";
 import PinHelpBanner from "./PinHelpBanner";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
+import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
 
 interface Props {
   schedule: ParsedSchedule;
@@ -23,8 +24,6 @@ interface Props {
   onBoardingInput?: () => void;
 }
 
-const ZOOM_STEPS = [0.75, 0.85, 1, 1.15, 1.3];
-
 export default function ScheduleView({
   schedule, isLocked = false, onToggleLock, onScheduleUpdate, onDelete, onReupload, onBackup, onRestore, onBoardingInput,
 }: Props) {
@@ -34,7 +33,7 @@ export default function ScheduleView({
   const [addDay, setAddDay] = useState<{ date: number; dayOfWeek: string } | null>(null);
   const [showPinHelp, setShowPinHelp] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
-  const [zoomIndex, setZoomIndex] = useState(2);
+  const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [leaderDateInput, setLeaderDateInput] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
   const restoreInputRef = useRef<HTMLInputElement>(null);
@@ -130,8 +129,10 @@ export default function ScheduleView({
     }
   };
 
-  const zoom = ZOOM_STEPS[zoomIndex];
   const boardingMode = isBoardingSchedule(days);
+
+  const zoomOut = () => setZoom((z) => clampZoom(z - ZOOM_STEP));
+  const zoomIn = () => setZoom((z) => clampZoom(z + ZOOM_STEP));
 
   return (
     <div className={`iphone-schedule-body ${selectedDay ? "with-panel" : ""}`}>
@@ -179,9 +180,9 @@ export default function ScheduleView({
       {!boardingMode && (
         <div className="iphone-toolbar iphone-toolbar-compact">
           <div className="iphone-toolbar-btns">
-            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setZoomIndex(i => Math.max(0, i - 1))} disabled={zoomIndex === 0}>−</button>
+            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomOut} disabled={zoom <= ZOOM_MIN}>−</button>
             <span className="iphone-zoom-label">{Math.round(zoom * 100)}%</span>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setZoomIndex(i => Math.min(ZOOM_STEPS.length - 1, i + 1))} disabled={zoomIndex === ZOOM_STEPS.length - 1}>+</button>
+            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomIn} disabled={zoom >= ZOOM_MAX}>+</button>
             <button type="button" className="btn btn-sm btn-primary" onClick={() => {
               if (isLocked) return;
               const now = new Date();
@@ -208,9 +209,9 @@ export default function ScheduleView({
       {boardingMode && (
         <div className="iphone-toolbar iphone-toolbar-compact">
           <div className="iphone-toolbar-btns">
-            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setZoomIndex(i => Math.max(0, i - 1))} disabled={zoomIndex === 0}>−</button>
+            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomOut} disabled={zoom <= ZOOM_MIN}>−</button>
             <span className="iphone-zoom-label">{Math.round(zoom * 100)}%</span>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={() => setZoomIndex(i => Math.min(ZOOM_STEPS.length - 1, i + 1))} disabled={zoomIndex === ZOOM_STEPS.length - 1}>+</button>
+            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomIn} disabled={zoom >= ZOOM_MAX}>+</button>
           </div>
         </div>
       )}
@@ -221,6 +222,7 @@ export default function ScheduleView({
         days={days}
         selected={selectedDay}
         zoom={zoom}
+        onZoomChange={setZoom}
         onSelect={(day) => handleSelect(day)}
         onEmptyDayClick={handleEmptyDayClick}
       />
