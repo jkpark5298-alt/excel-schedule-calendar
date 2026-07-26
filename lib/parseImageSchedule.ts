@@ -150,22 +150,26 @@ async function parseWithOpenAI(
 
   const daysInMonth = new Date(year, month, 0).getDate();
   const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
-  const prompt = `당신은 한국 항공사 CSM 월간 근무표 이미지를 읽는 파서입니다.
+  const prompt = `당신은 한국 항공사 근무표·캘린더 이미지를 읽는 파서입니다.
 이미지에서 직원별 일자 근무코드를 추출해 JSON만 반환하세요.
+
+지원 형식:
+1) CSM 월간 근무표 — 왼쪽에 성명(한글 2~4자), 가운데 1~${daysInMonth}일 근무코드 행
+2) 카톡/가족 캘린더 — 상단 "YYYY년 M월", 사람별 섹션, 날짜 숫자 아래 근무코드(오프, B7, A5, P, D, P6, 교육 등)
 
 규칙:
 - year=${year}, month=${month}, 이 달의 일수는 ${daysInMonth}일
-- 왼쪽에 성명(한글 2~4자), 가운데 1~${daysInMonth}일 근무코드가 있습니다.
-- 근무코드 예: 당, A, C, X, 휴, 休, 전, 연, 노고, 쥬, 사고(내), 교육 등
+- 근무코드 예: 당, A, C, X, 휴, 休, 전, 연, 오프, 노고, 쥬, 사고(내), 교육, B7, A5, P, D, P6 등
+- "오프"는 휴무로 두고 shifts에 "오프" 원문 그대로 넣어도 됨
 - 워터마크("1 페이지" 등)와 오른쪽 합계/하단 메모는 무시
 - 각 직원 shifts 배열 길이는 ${daysInMonth} (1일부터 순서대로). 비어 있으면 ""
-- 대상자 "${targetName}" 행이 반드시 포함되어야 합니다.
+- 대상자 "${targetName}" 행이 반드시 포함되어야 합니다 (예: 김현숙). 영문 축약명·빈 칸 사람은 선택
 - 가능하면 다른 직원 행도 함께 포함 (동료 표시용)
 
 출력 형식(JSON only):
 {
   "rows": [
-    { "name": "박종규", "shifts": ["A","C","당", "... ${daysInMonth}개"] }
+    { "name": "김현숙", "shifts": ["오프","B7","D", "... ${daysInMonth}개"] }
   ]
 }`;
 

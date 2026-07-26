@@ -1,14 +1,14 @@
 import { DaySchedule, ShiftCode } from "@/types/schedule";
 
-export const REST_RAW = new Set(["전", "X", "휴", "休", "주", "연"]);
+export const REST_RAW = new Set(["전", "X", "휴", "休", "주", "연", "오프"]);
 export const WORK_SHIFTS = new Set(["C", "A", "당"]);
 
 /** Display label with time range for boarding-team SKD codes */
 export const SHIFT_TIME_LABELS: Record<string, string> = {
-  B7: "B7(11~20)",
+  B7: "B7(11:00~20:00)",
   A5: "A5(05:40~14:40)",
-  P: "P(13:00~22:00)",
-  D: "D(05:00~11:30)",
+  P: "P(13~22)",
+  D: "D(05~11:30)",
   P6: "P6(13:30~22:30)",
 };
 
@@ -82,7 +82,7 @@ export function skdPillClass(shift: string): string {
   return "skd-pill-other";
 }
 
-/** 탑승수속 SKD — 셀 하단 표기: B7(11~20) */
+/** 탑승수속 SKD — 셀 하단 표기: B7(11:00~20:00) */
 export function skdPillBoardingLabel(day: DaySchedule): string {
   return skdPillBoardingLines(day).join("");
 }

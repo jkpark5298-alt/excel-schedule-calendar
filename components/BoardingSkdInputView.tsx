@@ -7,6 +7,7 @@ import { readApiJson } from "@/lib/readApiJson";
 import {
   BOARDING_SHIFT_OPTIONS,
   BOARDING_TARGET,
+  SHIFT_TIME_LABELS,
   formatShiftDisplay,
   skdPillClass,
 } from "@/lib/shiftDisplay";
@@ -130,7 +131,7 @@ export default function BoardingSkdInputView({
 
   return (
     <div className="boarding-skd-view">
-      <header className="boarding-skd-header safe-top">
+      <header className="boarding-skd-header">
         <button type="button" className="iphone-nav-link" onClick={onClose}>← 닫기</button>
         <h1 className="boarding-skd-title">{BOARDING_TARGET} 탑승수속 SKD</h1>
         <button type="button" className="iphone-nav-link iphone-nav-upload" onClick={handleSave}>저장</button>
@@ -180,12 +181,12 @@ export default function BoardingSkdInputView({
         {error && <div className="iphone-error">{error}</div>}
 
         <div className="boarding-skd-legend">
-          <span className={`boarding-legend-pill ${skdPillClass("B7")}`}>B7(11~20)</span>
-          <span className={`boarding-legend-pill ${skdPillClass("A5")}`}>A5(05:40~14:40)</span>
-          <span className={`boarding-legend-pill ${skdPillClass("P")}`}>P(13:00~22:00)</span>
-          <span className={`boarding-legend-pill ${skdPillClass("D")}`}>D(05:00~11:30)</span>
-          <span className={`boarding-legend-pill ${skdPillClass("P6")}`}>P6(13:30~22:30)</span>
-          <span className={`boarding-legend-pill ${skdPillClass("休")}`}>주/연→休</span>
+          <span className={`boarding-legend-pill ${skdPillClass("B7")}`}>{SHIFT_TIME_LABELS.B7}</span>
+          <span className={`boarding-legend-pill ${skdPillClass("A5")}`}>{SHIFT_TIME_LABELS.A5}</span>
+          <span className={`boarding-legend-pill ${skdPillClass("P")}`}>{SHIFT_TIME_LABELS.P}</span>
+          <span className={`boarding-legend-pill ${skdPillClass("D")}`}>{SHIFT_TIME_LABELS.D}</span>
+          <span className={`boarding-legend-pill ${skdPillClass("P6")}`}>{SHIFT_TIME_LABELS.P6}</span>
+          <span className={`boarding-legend-pill ${skdPillClass("休")}`}>오프/주/연→休</span>
         </div>
 
         {sortedDays.length > 0 ? (
