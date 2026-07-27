@@ -7,7 +7,7 @@ import {
   DOW_KO,
   skdPillClass,
 } from "@/lib/monthGrid";
-import { skdPillBoardingLines } from "@/lib/shiftDisplay";
+import { skdPillBoardingLinesDual, getDualPairLabel } from "@/lib/shiftDisplay";
 import { usePinchZoom } from "@/lib/usePinchZoom";
 import OpsSkdPills from "./OpsSkdPills";
 
@@ -30,9 +30,9 @@ interface Props {
   }) => void;
 }
 
-/** 합쳐보기 — 김현숙 TYPE / 시간 두 줄, 크게 */
+/** 합쳐보기 — 김현숙 TYPE + 짧은 시간 (셀 폭에 맞게) */
 function BoardingPill({ day }: { day: DaySchedule }) {
-  const lines = skdPillBoardingLines(day);
+  const lines = skdPillBoardingLinesDual(day);
   return (
     <div className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ${skdPillClass(day.myShift)}`}>
       {lines.map((line, i) => (
@@ -40,6 +40,14 @@ function BoardingPill({ day }: { day: DaySchedule }) {
           {line}
         </span>
       ))}
+    </div>
+  );
+}
+
+function DualPairBadge({ label }: { label: string }) {
+  return (
+    <div className="merged-pair-badge" title={label}>
+      <span className="merged-pair-badge-text">{label}</span>
     </div>
   );
 }
@@ -98,6 +106,15 @@ export default function MergedMonthCalendar({
                 const hasSkd = !!(cell.opsDay || cell.boardingDay);
                 const sel = selectedDate === cell.date && cell.inMonth;
                 const clickable = cell.inMonth && hasSkd && !!onSelectCell;
+                const pairLabel = cell.inMonth
+                  ? getDualPairLabel(cell.opsDay?.myShift, cell.boardingDay?.myShift)
+                  : null;
+                const bothSchedules = !!(cell.opsDay && cell.boardingDay);
+                const layoutClass = pairLabel
+                  ? "has-pair"
+                  : bothSchedules
+                    ? "half-split"
+                    : "single-side";
 
                 return (
                   <button
@@ -124,24 +141,20 @@ export default function MergedMonthCalendar({
                       {cell.date}
                     </span>
 
-                    <div className="ios-day-events merged-day-events">
+                    <div className={`ios-day-events merged-day-events ${layoutClass}`}>
                       <div className="merged-ops-block">
                         {cell.opsDay ? (
-                          <OpsSkdPills day={cell.opsDay} />
+                          <OpsSkdPills day={cell.opsDay} hideRelated />
                         ) : cell.inMonth ? (
-                          <>
-                            <div className="ios-day-slot ios-day-slot-top">
-                              <span className="merged-empty-tag">{opsTarget.slice(0, 1)} —</span>
-                            </div>
-                            <div className="ios-day-slot ios-day-slot-bottom" aria-hidden="true" />
-                          </>
+                          <div className="ios-day-slot ios-day-slot-top">
+                            <span className="merged-empty-tag">{opsTarget.slice(0, 1)} —</span>
+                          </div>
                         ) : (
-                          <>
-                            <div className="ios-day-slot ios-day-slot-top" aria-hidden="true" />
-                            <div className="ios-day-slot ios-day-slot-bottom" aria-hidden="true" />
-                          </>
+                          <div className="ios-day-slot ios-day-slot-top" aria-hidden="true" />
                         )}
                       </div>
+
+                      {pairLabel ? <DualPairBadge label={pairLabel} /> : null}
 
                       <div className="merged-boarding-block">
                         {cell.boardingDay ? (

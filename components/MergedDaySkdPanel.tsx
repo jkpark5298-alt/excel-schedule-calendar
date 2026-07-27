@@ -6,6 +6,7 @@ import {
   isBoardingSchedule,
   isBoardingDayLayout,
   isRestShift,
+  getDualPairLabel,
   skdPillBottomLines,
   skdPillBoardingLines,
   skdPillTopLines,
@@ -17,11 +18,13 @@ interface PersonSectionProps {
   day: DaySchedule | null;
   allDays: DaySchedule[];
   locked?: boolean;
+  /** 함께 보기 — 검정 하단(relatedCoworkers) 제외 */
+  hideRelated?: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function PersonSection({ name, day, allDays, locked, onEdit, onDelete }: PersonSectionProps) {
+function PersonSection({ name, day, allDays, locked, hideRelated, onEdit, onDelete }: PersonSectionProps) {
   if (!day) {
     return (
       <section className="merged-panel-section merged-panel-section-empty">
@@ -34,7 +37,7 @@ function PersonSection({ name, day, allDays, locked, onEdit, onDelete }: PersonS
   const boardingMode = isBoardingSchedule(allDays);
   const boarding = boardingMode && isBoardingDayLayout(allDays, day.myShift);
   const topLines = boarding ? skdPillBoardingLines(day) : skdPillTopLines(day);
-  const bottomLines = !boarding ? skdPillBottomLines(day) : [];
+  const bottomLines = !boarding && !hideRelated ? skdPillBottomLines(day) : [];
   const isRest = isRestShift(day.myShift);
 
   return (
@@ -123,6 +126,8 @@ export default function MergedDaySkdPanel({
   onDeleteBoarding,
   onClose,
 }: Props) {
+  const pairLabel = getDualPairLabel(opsDay?.myShift, boardingDay?.myShift);
+
   return (
     <div className="day-skd-panel merged-day-skd-panel safe-bottom">
       <div className="day-skd-panel-handle" />
@@ -142,9 +147,15 @@ export default function MergedDaySkdPanel({
           day={opsDay}
           allDays={opsDays}
           locked={opsLocked}
+          hideRelated
           onEdit={onEditOps}
           onDelete={onDeleteOps}
         />
+        {pairLabel && (
+          <div className="merged-pair-badge merged-pair-badge-panel">
+            <span className="merged-pair-badge-text">{pairLabel}</span>
+          </div>
+        )}
         <PersonSection
           name={boardingTarget}
           day={boardingDay}

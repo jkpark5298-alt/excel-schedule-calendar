@@ -56,6 +56,27 @@ export function isRestShift(shift: ShiftCode): boolean {
   return shift === "休" || REST_RAW.has(shift);
 }
 
+/**
+ * 함께 캘린더 중간 표기 (박종규 × 김현숙)
+ * C+P → 동시出 / C+D → 교대出退 / 休+P → 현숙🚗 / 休+休 → 동시休 / A+A5 → 동시退 / 당+A5 → PICK UP
+ */
+export function getDualPairLabel(
+  opsShift: ShiftCode | null | undefined,
+  boardingShift: ShiftCode | null | undefined,
+): string | null {
+  if (opsShift == null || boardingShift == null) return null;
+  const ops = isRestShift(opsShift) ? "休" : String(opsShift);
+  const boarding = isRestShift(boardingShift) ? "休" : String(boardingShift);
+
+  if (ops === "C" && boarding === "P") return "동시出";
+  if (ops === "C" && boarding === "D") return "교대出退";
+  if (ops === "休" && boarding === "P") return "현숙🚗";
+  if (ops === "休" && boarding === "休") return "동시休";
+  if (ops === "A" && boarding === "A5") return "동시退";
+  if (ops === "당" && boarding === "A5") return "PICK UP";
+  return null;
+}
+
 export function shiftClass(shift: ShiftCode): string {
   if (shift === "C") return "shift-C";
   if (shift === "A") return "shift-A";
@@ -104,6 +125,24 @@ export function skdPillBoardingLines(day: DaySchedule): string[] {
     }
   }
   return [`${leader}${formatShiftDisplay(day.myShift)}`];
+}
+
+/** 좁은 함께 셀용 — TYPE / 짧은 시간 (잘림 방지) 예) B7 · 11~20 */
+export function skdPillBoardingLinesDual(day: DaySchedule): string[] {
+  const leader = day.isLeader ? "👍" : "";
+  const code = String(day.myShift);
+  const timed = SHIFT_TIME_LABELS[code];
+  if (!timed) return [`${leader}${formatShiftDisplay(code)}`];
+
+  const m = timed.match(/\((\d{1,2})(?::(\d{2}))?~(\d{1,2})(?::(\d{2}))?\)/);
+  if (!m) return [`${leader}${code}`];
+
+  const fmt = (h: string, min?: string) => {
+    const hh = String(Number(h));
+    if (!min || min === "00") return hh;
+    return `${hh}:${min}`;
+  };
+  return [`${leader}${code}`, `${fmt(m[1], m[2])}~${fmt(m[3], m[4])}`];
 }
 
 /** 상단 첫째 칸 — TYPE만 (👍C / 당 …) */
