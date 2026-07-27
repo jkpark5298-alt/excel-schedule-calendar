@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { DaySchedule, ParsedSchedule } from "@/types/schedule";
 import { BOARDING_SHIFT_OPTIONS } from "@/lib/shiftDisplay";
 import MergedMonthCalendar from "./MergedMonthCalendar";
 import MergedDaySkdPanel from "./MergedDaySkdPanel";
 import EditDayModal from "./EditDayModal";
+import DualPrintView from "./DualPrintView";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
+import { exportElementAsPdf } from "@/lib/exportPdf";
 import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
 
 export interface MergedSelectedDay {
@@ -27,6 +29,7 @@ interface Props {
   boardingLocked?: boolean;
   onOpsScheduleUpdate: (schedule: ParsedSchedule) => void;
   onBoardingScheduleUpdate: (schedule: ParsedSchedule) => void;
+  onBackup?: () => void;
 }
 
 export default function DualScheduleView({
@@ -40,16 +43,45 @@ export default function DualScheduleView({
   boardingLocked = false,
   onOpsScheduleUpdate,
   onBoardingScheduleUpdate,
+  onBackup,
 }: Props) {
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [selected, setSelected] = useState<MergedSelectedDay | null>(null);
   const [editState, setEditState] = useState<{ target: "ops" | "boarding"; day: DaySchedule } | null>(null);
+  const [isPrinting, setIsPrinting] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const hasAny = !!opsSchedule || !!boardingSchedule;
   const opsDays = opsSchedule?.days ?? [];
   const boardingDays = boardingSchedule?.days ?? [];
   const zoomOut = () => setZoom((z) => clampZoom(z - ZOOM_STEP));
   const zoomIn = () => setZoom((z) => clampZoom(z + ZOOM_STEP));
+
+  const pdfFilename = `함께근무표_${opsTarget}_${boardingTarget}_${year}년${month}월.pdf`;
+  const pdfTitle = `함께 ${year}년 ${month}월 · ${opsTarget}+${boardingTarget}`;
+
+  const handlePdf = useCallback(async (mode: "download" | "share") => {
+    if (!hasAny) {
+      alert("내보낼 함께 근무표가 없습니다. 먼저 일정을 업로드해 주세요.");
+      return;
+    }
+    setIsPrinting(true);
+    await new Promise((r) => setTimeout(r, 100));
+    try {
+      const el = printRef.current;
+      if (!el) return;
+      await exportElementAsPdf(el, pdfFilename, {
+        mode,
+        title: pdfTitle,
+        text: `${opsTarget} + ${boardingTarget} 함께 근무표 PDF`,
+      });
+    } catch (e) {
+      console.error(e);
+      alert("PDF 생성에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsPrinting(false);
+    }
+  }, [hasAny, pdfFilename, pdfTitle, opsTarget, boardingTarget]);
 
   const refreshSelected = useCallback((nextOps: DaySchedule[], nextBoarding: DaySchedule[]) => {
     setSelected((prev) => {
@@ -122,6 +154,31 @@ export default function DualScheduleView({
             disabled={zoom >= ZOOM_MAX}
           >
             +
+          </button>
+          {onBackup && (
+            <button type="button" className="btn btn-sm btn-secondary" onClick={onBackup}>
+              PC 저장
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn-sm btn-pdf"
+            disabled={!hasAny || isPrinting}
+            onClick={() => {
+              void handlePdf("download");
+            }}
+          >
+            PDF 저장
+          </button>
+          <button
+            type="button"
+            className="btn btn-sm btn-pdf"
+            disabled={!hasAny || isPrinting}
+            onClick={() => {
+              void handlePdf("share");
+            }}
+          >
+            PDF 공유
           </button>
           {opsSchedule && (
             <button
@@ -216,6 +273,27 @@ export default function DualScheduleView({
           onSave={handleSaveEdit}
           onClose={() => setEditState(null)}
         />
+      )}
+
+      <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+        <DualPrintView
+          ref={printRef}
+          year={year}
+          month={month}
+          opsTarget={opsTarget}
+          boardingTarget={boardingTarget}
+          opsDays={opsDays}
+          boardingDays={boardingDays}
+        />
+      </div>
+
+      {isPrinting && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-slate-800 rounded-xl p-6 text-white">
+            <div className="text-3xl mb-2 text-center">⏳</div>
+            <p>PDF 생성 중...</p>
+          </div>
+        </div>
       )}
     </div>
   );

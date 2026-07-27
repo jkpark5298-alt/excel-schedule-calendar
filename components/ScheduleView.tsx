@@ -10,6 +10,7 @@ import DaySkdPanel from "./DaySkdPanel";
 import PrintView from "./PrintView";
 import PinHelpBanner from "./PinHelpBanner";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
+import { exportElementAsPdf } from "@/lib/exportPdf";
 import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
 
 interface Props {
@@ -103,27 +104,21 @@ export default function ScheduleView({
     if (lastTarget) setSelectedDay(lastTarget);
   }, [days, leaderDateInput, persist]);
 
-  const handlePDF = async () => {
+  const handlePDF = async (mode: "download" | "share" | "auto" = "auto") => {
     setIsPrinting(true);
-    await new Promise(r => setTimeout(r, 100));
+    await new Promise((r) => setTimeout(r, 100));
     try {
-      const { default: html2canvas } = await import("html2canvas");
-      const { jsPDF } = await import("jspdf");
       const el = printRef.current;
       if (!el) return;
-      const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-      const pdfW = pdf.internal.pageSize.getWidth();
-      const pdfH = (canvas.height * pdfW) / canvas.width;
-      const pageH = pdf.internal.pageSize.getHeight();
-      let yPos = 0;
-      while (yPos < pdfH) {
-        if (yPos > 0) pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, -yPos, pdfW, pdfH);
-        yPos += pageH;
-      }
-      pdf.save(`근무표_${schedule.targetName}_${schedule.year}년${schedule.month}월.pdf`);
+      const filename = `근무표_${schedule.targetName}_${schedule.year}년${schedule.month}월.pdf`;
+      await exportElementAsPdf(el, filename, {
+        mode,
+        title: `${schedule.targetName} ${schedule.year}년 ${schedule.month}월 근무표`,
+        text: `${schedule.targetName} 근무표 PDF`,
+      });
+    } catch (e) {
+      console.error(e);
+      alert("PDF 생성에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setIsPrinting(false);
     }
@@ -153,9 +148,10 @@ export default function ScheduleView({
               {isLocked ? "🔓 확정 해제" : "📌 확정"}
             </button>
           )}
-          <button type="button" className="btn btn-sm btn-secondary" onClick={onBackup}>백업</button>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={onBackup} title="전체 캘린더 JSON을 PC에 저장">PC 저장</button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => restoreInputRef.current?.click()}>복원</button>
-          <button type="button" className="btn btn-sm btn-pdf" onClick={handlePDF}>PDF</button>
+          <button type="button" className="btn btn-sm btn-pdf" disabled={isPrinting} onClick={() => { void handlePDF("download"); }}>PDF 저장</button>
+          <button type="button" className="btn btn-sm btn-pdf" disabled={isPrinting} onClick={() => { void handlePDF("share"); }}>PDF 공유</button>
           <button
             type="button"
             className="btn btn-sm btn-secondary"

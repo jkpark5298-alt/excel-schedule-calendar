@@ -29,8 +29,9 @@ export default function PinHelpBanner({ onClose }: Props) {
             <p className="pin-help-sub">앱처럼 실행되며 데이터가 더 안정적으로 유지됩니다.</p>
           </li>
           <li>
-            <strong>백업 파일</strong>
-            <p><strong>백업</strong> → JSON 저장 → 다른 기기·브라우저에서 <strong>복원</strong></p>
+            <strong>PC 저장 · PDF 공유</strong>
+            <p><strong>PC 저장</strong> → 전체 캘린더 JSON을 PC에 저장 · <strong>복원</strong>으로 불러오기</p>
+            <p className="pin-help-sub"><strong>함께</strong> 탭에서 <strong>PDF 저장</strong>(파일 받기) / <strong>PDF 공유</strong>(메신저·메일 등)</p>
           </li>
         </ol>
         <button type="button" className="btn btn-primary w-full" onClick={onClose}>확인</button>

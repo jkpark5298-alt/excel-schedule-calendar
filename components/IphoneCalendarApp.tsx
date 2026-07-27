@@ -451,6 +451,8 @@ export default function IphoneCalendarApp() {
 
           onBoardingScheduleUpdate={handleScheduleUpdate}
 
+          onBackup={handleBackup}
+
         />
 
       ) : schedule ? (
