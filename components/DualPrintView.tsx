@@ -21,18 +21,18 @@ interface Props {
 }
 
 function opsShiftColor(shift: string): string {
-  if (shift === "C") return "#7c3aed";
-  if (shift === "A") return "#2563eb";
-  if (shift === "당") return "#d97706";
-  if (isRestShift(shift)) return "#dc2626";
-  return "#94a3b8";
+  if (shift === "C") return "#6d28d9";
+  if (shift === "A") return "#1d4ed8";
+  if (shift === "당") return "#c2410c";
+  if (isRestShift(shift)) return "#b91c1c";
+  return "#475569";
 }
 
 function boardingShiftColor(shift: string): string {
-  if (shift === "B7" || shift === "P" || shift === "P6") return "#0d9488";
-  if (shift === "A5" || shift === "D") return "#2563eb";
-  if (isRestShift(shift)) return "#dc2626";
-  return "#64748b";
+  if (shift === "B7" || shift === "P" || shift === "P6") return "#0f766e";
+  if (shift === "A5" || shift === "D") return "#1d4ed8";
+  if (isRestShift(shift)) return "#b91c1c";
+  return "#475569";
 }
 
 const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
@@ -49,17 +49,17 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
     <div
       ref={ref}
       style={{
-        background: "#0f172a",
-        color: "#e2e8f0",
+        background: "#ffffff",
+        color: "#0f172a",
         padding: "24px",
         width: "960px",
         fontFamily: "'Noto Sans KR', sans-serif",
       }}
     >
-      <h1 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "4px" }}>
+      <h1 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "4px", color: "#0f172a" }}>
         함께 근무표 · {opsTarget} + {boardingTarget}
       </h1>
-      <p style={{ color: "#94a3b8", fontSize: "13px", marginBottom: "16px" }}>
+      <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "16px" }}>
         {year}년 {month}월 | 일정 있는 날 {dayCount}일 | 일요일 시작
       </p>
 
@@ -69,15 +69,15 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
           gap: "16px",
           marginBottom: "16px",
           fontSize: "12px",
-          color: "#cbd5e1",
+          color: "#334155",
         }}
       >
         <span>
-          <span style={{ color: "#a78bfa", fontWeight: 700 }}>● </span>
+          <span style={{ color: "#6d28d9", fontWeight: 700 }}>● </span>
           {opsTarget} (운항)
         </span>
         <span>
-          <span style={{ color: "#2dd4bf", fontWeight: 700 }}>● </span>
+          <span style={{ color: "#0f766e", fontWeight: 700 }}>● </span>
           {boardingTarget} (탑승)
         </span>
       </div>
@@ -97,9 +97,10 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
               textAlign: "center",
               fontWeight: "bold",
               fontSize: "12px",
-              color: i === 0 ? "#f87171" : i === 6 ? "#60a5fa" : "#94a3b8",
+              color: i === 0 ? "#dc2626" : i === 6 ? "#2563eb" : "#475569",
               padding: "6px",
-              background: "#1e293b",
+              background: "#f1f5f9",
+              border: "1px solid #e2e8f0",
               borderRadius: "6px",
             }}
           >
@@ -123,16 +124,16 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
               return (
                 <div
                   key={cell.key}
-                  style={{ minHeight: "96px", background: "#0f172a", borderRadius: "8px" }}
+                  style={{ minHeight: "96px", background: "#ffffff", borderRadius: "8px" }}
                 />
               );
             }
 
             const pairLabel = getDualPairLabel(cell.opsDay?.myShift, cell.boardingDay?.myShift);
-            const opsColor = cell.opsDay ? opsShiftColor(cell.opsDay.myShift) : "#64748b";
+            const opsColor = cell.opsDay ? opsShiftColor(cell.opsDay.myShift) : "#94a3b8";
             const boardingColor = cell.boardingDay
               ? boardingShiftColor(cell.boardingDay.myShift)
-              : "#64748b";
+              : "#94a3b8";
             const boardingLines = cell.boardingDay
               ? skdPillBoardingLinesDual(cell.boardingDay)
               : [];
@@ -141,8 +142,8 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
               <div
                 key={cell.key}
                 style={{
-                  background: "#1e293b",
-                  border: "1px solid #334155",
+                  background: "#ffffff",
+                  border: "1px solid #cbd5e1",
                   borderRadius: "8px",
                   padding: "8px",
                   minHeight: "96px",
@@ -151,23 +152,23 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
                   gap: "4px",
                 }}
               >
-                <div style={{ fontWeight: "bold", fontSize: "14px" }}>{cell.date}</div>
+                <div style={{ fontWeight: "bold", fontSize: "14px", color: "#0f172a" }}>{cell.date}</div>
 
                 <div style={{ fontSize: "10px", color: opsColor, lineHeight: 1.35 }}>
-                  <span style={{ opacity: 0.75 }}>{opsTarget.slice(0, 1)} </span>
+                  <span style={{ color: "#64748b" }}>{opsTarget.slice(0, 1)} </span>
                   {cell.opsDay ? (
                     <>
                       {cell.opsDay.isLeader ? "👍" : ""}
                       {formatShiftDisplay(cell.opsDay.myShift)}
                       {!isRestShift(cell.opsDay.myShift) &&
                         cell.opsDay.sameShiftCoworkers.length > 0 && (
-                          <span style={{ display: "block", opacity: 0.9 }}>
+                          <span style={{ display: "block" }}>
                             {cell.opsDay.sameShiftCoworkers.join(", ")}
                           </span>
                         )}
                     </>
                   ) : (
-                    <span style={{ opacity: 0.45 }}>—</span>
+                    <span style={{ color: "#94a3b8" }}>—</span>
                   )}
                 </div>
 
@@ -176,9 +177,10 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
                     style={{
                       fontSize: "9px",
                       fontWeight: 700,
-                      color: "#fbbf24",
+                      color: "#92400e",
                       textAlign: "center",
-                      background: "#422006",
+                      background: "#fef3c7",
+                      border: "1px solid #fcd34d",
                       borderRadius: "4px",
                       padding: "2px 4px",
                     }}
@@ -188,7 +190,7 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
                 )}
 
                 <div style={{ fontSize: "10px", color: boardingColor, lineHeight: 1.35 }}>
-                  <span style={{ opacity: 0.75 }}>{boardingTarget.slice(0, 1)} </span>
+                  <span style={{ color: "#64748b" }}>{boardingTarget.slice(0, 1)} </span>
                   {cell.boardingDay ? (
                     boardingLines.map((line) => (
                       <span key={line} style={{ display: "block" }}>
@@ -196,7 +198,7 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
                       </span>
                     ))
                   ) : (
-                    <span style={{ opacity: 0.45 }}>—</span>
+                    <span style={{ color: "#94a3b8" }}>—</span>
                   )}
                 </div>
               </div>
