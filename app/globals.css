@@ -246,19 +246,71 @@ body {
   color: #fff;
 }
 
-/* PC layout: wider calendar, taller day cells, scoped bottom panel */
+/* PC layout: wider calendar, auto-growing day cells */
 .iphone-app.layout-pc .iphone-schedule-body {
-  padding: 16px 20px 40px;
+  padding: 16px 20px 64px;
 }
 
-.iphone-app.layout-pc .ios-day-cell {
-  --ios-day-cell-h: 118px;
+.iphone-app.layout-pc .ios-month-wrap {
+  margin-bottom: 16px;
+}
+
+.iphone-app.layout-pc .ios-month-grid {
+  overflow: visible;
+}
+
+.iphone-app.layout-pc .ios-day-cell:not(.merged-day-cell) {
+  --ios-day-cell-h: 132px;
   --ios-day-slot-h: 28px;
-  --ios-day-slot-h-2: 40px;
+  --ios-day-slot-h-2: 44px;
+  height: auto;
+  min-height: var(--ios-day-cell-h);
+  max-height: none;
+  overflow: visible;
+}
+
+.iphone-app.layout-pc .ios-day-cell.boarding-skd:not(.merged-day-cell) {
+  --ios-day-cell-h: 92px;
+  height: var(--ios-day-cell-h);
+  min-height: var(--ios-day-cell-h);
+  max-height: var(--ios-day-cell-h);
+  overflow: hidden;
+}
+
+.iphone-app.layout-pc .ios-day-events {
+  overflow: visible;
+}
+
+.iphone-app.layout-pc .ios-day-slot-lines-2 {
+  flex: 0 0 auto;
+  min-height: var(--ios-day-slot-h-2);
+  max-height: none;
+  height: auto;
+}
+
+.iphone-app.layout-pc .ios-skd-pill-stack {
+  height: auto;
+  overflow: visible;
+}
+
+.iphone-app.layout-pc .ios-skd-line {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 .iphone-app.layout-pc .merged-day-cell {
-  --ios-day-cell-h: 156px;
+  --ios-day-cell-h: 172px;
+  --ios-day-slot-h-2: 40px;
+  height: auto;
+  min-height: var(--ios-day-cell-h);
+  max-height: none;
+  overflow: visible;
+}
+
+.iphone-app.layout-pc .merged-day-events,
+.iphone-app.layout-pc .merged-ops-block {
+  overflow: visible;
 }
 
 .iphone-app.layout-pc .ios-dow {
