@@ -1,5 +1,7 @@
 "use client";
 
+import type { LayoutMode } from "@/lib/layoutMode";
+
 export type PersonTab = "ops" | "boarding" | "dual";
 
 interface Props {
@@ -15,11 +17,13 @@ interface Props {
   onUpload: () => void;
   opsTarget: string;
   boardingTarget: string;
+  layoutMode: LayoutMode;
+  onLayoutModeChange: (mode: LayoutMode) => void;
 }
 
 export default function MonthNavigator({
   year, month, canPrev, canNext, onPrev, onNext, onToday, activeTab, onSwitchTab, onUpload,
-  opsTarget, boardingTarget,
+  opsTarget, boardingTarget, layoutMode, onLayoutModeChange,
 }: Props) {
   const subtitle = activeTab === "dual"
     ? `${opsTarget} + ${boardingTarget} 합침`
@@ -67,6 +71,22 @@ export default function MonthNavigator({
           <p className="iphone-nav-sub">{subtitle}</p>
         </div>
         <button type="button" className="iphone-nav-arrow" disabled={!canNext} onClick={onNext} aria-label="다음 달">›</button>
+      </div>
+      <div className="layout-mode-row" role="group" aria-label="화면 형태">
+        <button
+          type="button"
+          className={`layout-mode-btn ${layoutMode === "phone" ? "active" : ""}`}
+          onClick={() => onLayoutModeChange("phone")}
+        >
+          아이폰
+        </button>
+        <button
+          type="button"
+          className={`layout-mode-btn ${layoutMode === "pc" ? "active" : ""}`}
+          onClick={() => onLayoutModeChange("pc")}
+        >
+          PC
+        </button>
       </div>
     </header>
   );

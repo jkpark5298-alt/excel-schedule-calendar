@@ -213,6 +213,88 @@ body {
   -webkit-overflow-scrolling: touch;
 }
 
+.iphone-app.layout-phone {
+  max-width: 430px;
+}
+
+.iphone-app.layout-pc {
+  max-width: min(1120px, 100%);
+  width: 100%;
+  background: #0f172a;
+}
+
+.layout-mode-row {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 16px 10px;
+}
+
+.layout-mode-btn {
+  background: #2c2c2e;
+  border: none;
+  color: #8e8e93;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.layout-mode-btn.active {
+  background: #0a84ff;
+  color: #fff;
+}
+
+/* PC layout: wider calendar, taller day cells, scoped bottom panel */
+.iphone-app.layout-pc .iphone-schedule-body {
+  padding: 16px 20px 40px;
+}
+
+.iphone-app.layout-pc .ios-day-cell {
+  --ios-day-cell-h: 118px;
+  --ios-day-slot-h: 28px;
+  --ios-day-slot-h-2: 40px;
+}
+
+.iphone-app.layout-pc .merged-day-cell {
+  --ios-day-cell-h: 156px;
+}
+
+.iphone-app.layout-pc .ios-dow {
+  font-size: 12px;
+  padding: 8px 0;
+}
+
+.iphone-app.layout-pc .ios-day-num {
+  font-size: 13px;
+}
+
+.iphone-app.layout-pc .iphone-modal {
+  max-width: 560px;
+}
+
+.iphone-app.layout-pc .day-skd-panel,
+.iphone-app.layout-pc .merged-day-skd-panel {
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: min(1120px, 100%);
+  max-width: 1120px;
+}
+
+.iphone-app.layout-pc .boarding-skd-view {
+  max-width: none;
+  width: 100%;
+}
+
+.iphone-app.layout-pc .empty-preview-card,
+.iphone-app.layout-pc .iphone-stored-months,
+.iphone-app.layout-pc .pin-help-modal {
+  max-width: 640px;
+}
+
 .iphone-schedule-body {
   padding: 12px;
   padding-bottom: max(32px, env(safe-area-inset-bottom, 32px));
