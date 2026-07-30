@@ -7,9 +7,8 @@ import {
   DOW_KO,
   skdPillClass,
 } from "@/lib/monthGrid";
-import { skdPillBoardingLinesDual, getDualPairLabel } from "@/lib/shiftDisplay";
+import { skdPillBoardingLinesDual, skdPillOpsLinesDual, getDualPairLabel } from "@/lib/shiftDisplay";
 import { usePinchZoom } from "@/lib/usePinchZoom";
-import OpsSkdPills from "./OpsSkdPills";
 
 interface Props {
   year: number;
@@ -30,11 +29,27 @@ interface Props {
   }) => void;
 }
 
-/** 합쳐보기 — 김현숙 TYPE + 짧은 시간 (셀 폭에 맞게) */
+/** 합쳐보기 — 김현숙 TYPE + 짧은 시간 */
 function BoardingPill({ day }: { day: DaySchedule }) {
   const lines = skdPillBoardingLinesDual(day);
   return (
     <div className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ${skdPillClass(day.myShift)}`}>
+      {lines.map((line, i) => (
+        <span key={`${i}-${line}`} className="ios-skd-boarding-line">
+          {line}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** 합쳐보기 운항 — 김현숙과 동일 2줄 형식 (TYPE / 동료) */
+function OpsPillDual({ day }: { day: DaySchedule }) {
+  const lines = skdPillOpsLinesDual(day);
+  return (
+    <div
+      className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ios-skd-pill-ops-dual ${day.isLeader ? "ios-skd-pill-leader" : ""} ${skdPillClass(day.myShift)}`}
+    >
       {lines.map((line, i) => (
         <span key={`${i}-${line}`} className="ios-skd-boarding-line">
           {line}
@@ -144,14 +159,10 @@ export default function MergedMonthCalendar({
                     <div className={`ios-day-events merged-day-events ${layoutClass}`}>
                       <div className="merged-ops-block">
                         {cell.opsDay ? (
-                          <OpsSkdPills day={cell.opsDay} hideRelated />
+                          <OpsPillDual day={cell.opsDay} />
                         ) : cell.inMonth ? (
-                          <div className="ios-day-slot ios-day-slot-top">
-                            <span className="merged-empty-tag">{opsTarget.slice(0, 1)} —</span>
-                          </div>
-                        ) : (
-                          <div className="ios-day-slot ios-day-slot-top" aria-hidden="true" />
-                        )}
+                          <span className="merged-empty-tag">{opsTarget.slice(0, 1)} —</span>
+                        ) : null}
                       </div>
 
                       {pairLabel ? <DualPairBadge label={pairLabel} /> : null}

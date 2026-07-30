@@ -262,25 +262,84 @@ body {
   line-height: 1.2;
 }
 
-/* 아이폰 레이아웃 — 일자 셀 기존 크기 유지 */
+/* 아이폰 레이아웃 — 일자 셀 세로 압축 */
 .iphone-app.layout-phone .ios-day-cell:not(.merged-day-cell) {
-  --ios-day-cell-h: 92px;
+  --ios-day-cell-h: 70px;
+  --ios-day-slot-h: 18px;
+  --ios-day-slot-h-2: 22px;
+  --ios-day-slot-compact-h: 20px;
   height: var(--ios-day-cell-h);
   min-height: var(--ios-day-cell-h);
   max-height: var(--ios-day-cell-h);
   overflow: hidden;
+  padding: 1px 2px 2px;
 }
 
 .iphone-app.layout-phone .ios-day-cell.boarding-skd:not(.merged-day-cell) {
-  --ios-day-cell-h: 88px;
+  --ios-day-cell-h: 56px;
 }
 
 .iphone-app.layout-phone .merged-day-cell {
-  --ios-day-cell-h: 118px;
+  --ios-day-cell-h: 96px;
   height: var(--ios-day-cell-h);
   min-height: var(--ios-day-cell-h);
   max-height: var(--ios-day-cell-h);
   overflow: hidden;
+}
+
+.iphone-app.layout-phone .ios-day-events {
+  gap: 0;
+  margin-top: 0;
+}
+
+.iphone-app.layout-phone .ios-day-events-ops {
+  gap: 1px;
+}
+
+.iphone-app.layout-phone .ios-day-slot-compact {
+  flex: 0 0 var(--ios-day-slot-compact-h);
+  min-height: var(--ios-day-slot-compact-h);
+  max-height: var(--ios-day-slot-compact-h);
+}
+
+.iphone-app.layout-phone .ios-day-slot-boarding-stack {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: none;
+  align-items: stretch;
+}
+
+.iphone-app.layout-phone .ios-skd-pill-boarding-dual {
+  min-height: 0;
+  height: 100%;
+  padding: 1px 2px;
+  gap: 0;
+}
+
+.iphone-app.layout-phone .ios-skd-boarding-line:first-child {
+  font-size: 10px;
+}
+
+.iphone-app.layout-phone .ios-skd-boarding-line:nth-child(2) {
+  font-size: 8px;
+}
+
+.iphone-app.layout-phone .ios-skd-pill-sub-names {
+  font-size: 9px;
+}
+
+.iphone-app.layout-phone .merged-ops-block,
+.iphone-app.layout-phone .merged-boarding-block {
+  justify-content: center;
+}
+
+.iphone-app.layout-phone .merged-pair-badge {
+  min-height: 14px;
+  padding: 0 2px;
+}
+
+.iphone-app.layout-phone .merged-pair-badge-text {
+  font-size: 8px;
 }
 
 /* PC layout: wider calendar, auto-growing day cells */
@@ -1211,15 +1270,28 @@ body {
   overflow: hidden;
 }
 
-.ios-day-slot-spacer {
+.ios-day-slot-compact {
+  flex: 0 0 var(--ios-day-slot-compact-h, 20px);
+  min-height: var(--ios-day-slot-compact-h, 20px);
+  max-height: var(--ios-day-slot-compact-h, 20px);
+}
+
+.ios-day-slot-boarding-stack {
   flex: 1 1 auto;
   min-height: 0;
   max-height: none;
+  display: flex;
+  align-items: stretch;
+}
+
+.ios-skd-pill-black-one {
+  justify-content: center;
 }
 
 .ios-day-events-boarding .ios-day-slot-bottom {
-  margin-top: auto;
-  flex: 0 0 var(--ios-day-slot-h);
+  margin-top: 0;
+  flex: 1 1 auto;
+  max-height: none;
 }
 
 .ios-day-events-bottom {
@@ -1491,20 +1563,30 @@ body {
 
 @media (max-width: 640px) {
   .ios-day-cell {
-    --ios-day-cell-h: 88px;
-    --ios-day-slot-h: 22px;
-    --ios-day-slot-h-2: 40px;
+    --ios-day-cell-h: 70px;
+    --ios-day-slot-h: 18px;
+    --ios-day-slot-h-2: 22px;
+    --ios-day-slot-compact-h: 20px;
   }
 
-  /* 아이폰 — 기존 셀 높이 유지 (과도한 확대 방지) */
   .ios-day-cell:not(.boarding-skd) {
-    --ios-day-cell-h: 92px;
+    --ios-day-cell-h: 70px;
+  }
+
+  .ios-day-cell.boarding-skd {
+    --ios-day-cell-h: 56px;
   }
 
   .ios-day-slot-lines-2 {
     flex: 0 0 var(--ios-day-slot-h-2);
     min-height: var(--ios-day-slot-h-2);
     max-height: var(--ios-day-slot-h-2);
+  }
+
+  .ios-day-slot-compact {
+    flex: 0 0 var(--ios-day-slot-compact-h);
+    min-height: var(--ios-day-slot-compact-h);
+    max-height: var(--ios-day-slot-compact-h);
   }
 
   .ios-skd-pill-multiline {
@@ -1524,11 +1606,11 @@ body {
   }
 
   .merged-day-cell {
-    --ios-day-cell-h: 118px;
+    --ios-day-cell-h: 96px;
   }
 
   .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) { font-size: 10px; }
-  .ios-skd-pill-sub-names { font-size: 10px; }
+  .ios-skd-pill-sub-names { font-size: 9px; }
   .ios-skd-pill-boarding { font-size: 9px; }
 }
 
@@ -1600,9 +1682,9 @@ body {
 }
 
 .merged-day-cell {
-  --ios-day-cell-h: 118px;
-  --ios-day-slot-h: 22px;
-  --ios-day-slot-h-2: 34px;
+  --ios-day-cell-h: 96px;
+  --ios-day-slot-h: 20px;
+  --ios-day-slot-h-2: 28px;
   height: var(--ios-day-cell-h);
   min-height: var(--ios-day-cell-h);
   max-height: var(--ios-day-cell-h);
@@ -1649,57 +1731,25 @@ body {
 .merged-ops-block {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
   flex: 0 0 auto;
   min-width: 0;
   overflow: hidden;
-  align-items: center;
-}
-
-.merged-ops-block .ios-day-slot {
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
+}
+
+.merged-ops-block .ios-skd-pill-ops-dual {
   width: 100%;
-}
-
-.merged-ops-block .ios-skd-pill {
-  text-align: center;
-  align-items: center;
-}
-
-.merged-ops-block .ios-skd-pill-stack {
-  align-items: center;
-  height: auto;
-  max-height: 100%;
-}
-
-.merged-ops-block .ios-skd-line {
-  text-align: center;
-  width: 100%;
-  font-size: 9px;
-  line-height: 1.15;
-}
-
-.merged-ops-block .ios-day-slot-top {
-  max-height: none;
-  flex: 1 1 auto;
   min-height: 0;
   height: auto;
-}
-
-.merged-day-events.half-split .merged-ops-block .ios-day-slot,
-.merged-day-events.has-pair .merged-ops-block .ios-day-slot,
-.merged-day-events.single-side .merged-ops-block .ios-day-slot {
-  flex: 0 0 auto;
-  max-height: none;
-  min-height: 0;
-  height: auto;
+  text-align: center;
 }
 
 .merged-day-events.half-split .merged-ops-block,
 .merged-day-events.has-pair .merged-ops-block,
 .merged-day-events.single-side .merged-ops-block {
-  align-items: center;
+  align-items: stretch;
 }
 
 .merged-pair-badge {

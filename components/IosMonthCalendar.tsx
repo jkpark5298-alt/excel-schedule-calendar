@@ -6,12 +6,12 @@ import {
   DOW_KO,
   buildMonthGrid,
   skdPillClass,
-  skdPillBoardingLabel,
   isBoardingDayLayout,
 } from "@/lib/monthGrid";
 import { computeOpsMonthStats, formatWon } from "@/lib/opsMonthStats";
 import { usePinchZoom } from "@/lib/usePinchZoom";
 import OpsSkdPills from "./OpsSkdPills";
+import { skdPillBoardingLinesDual } from "@/lib/shiftDisplay";
 
 interface Props {
   year: number;
@@ -109,23 +109,23 @@ export default function IosMonthCalendar({
                     </span>
                     <div className={`ios-day-events ${boarding ? "ios-day-events-boarding" : "ios-day-events-ops"}`}>
                       {!boarding ? (
-                        schedule ? <OpsSkdPills day={schedule} /> : (
-                          <>
-                            <div className="ios-day-slot ios-day-slot-top ios-day-slot-lines-2" />
-                            <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-lines-2" />
-                          </>
+                        schedule ? <OpsSkdPills day={schedule} compact /> : (
+                          <div className="ios-day-slot ios-day-slot-top ios-day-slot-compact" />
                         )
                       ) : (
-                        <>
-                          <div className="ios-day-slot ios-day-slot-spacer" aria-hidden="true" />
-                          <div className="ios-day-slot ios-day-slot-bottom">
-                            {schedule && (
-                              <div className={`ios-skd-pill ios-skd-pill-boarding ${skdPillClass(schedule.myShift)}`}>
-                                {skdPillBoardingLabel(schedule)}
-                              </div>
-                            )}
-                          </div>
-                        </>
+                        <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-boarding-stack">
+                          {schedule && (
+                            <div
+                              className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ${skdPillClass(schedule.myShift)}`}
+                            >
+                              {skdPillBoardingLinesDual(schedule).map((line, i) => (
+                                <span key={`${i}-${line}`} className="ios-skd-boarding-line">
+                                  {line}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
                   </button>
