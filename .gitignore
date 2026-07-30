@@ -44,3 +44,6 @@ test-schedule.xlsx
 
 .vercel
 .env*.local
+
+scripts/wallpaper-test-out/
+

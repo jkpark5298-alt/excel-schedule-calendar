@@ -1,14 +1,17 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DaySchedule, ParsedSchedule } from "@/types/schedule";
 import { BOARDING_SHIFT_OPTIONS } from "@/lib/shiftDisplay";
 import MergedMonthCalendar from "./MergedMonthCalendar";
 import MergedDaySkdPanel from "./MergedDaySkdPanel";
 import EditDayModal from "./EditDayModal";
 import DualPrintView from "./DualPrintView";
+import DualWallpaperView from "./DualWallpaperView";
+import type { PdfExportActions } from "./MonthNavigator";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 import { exportElementAsPdf } from "@/lib/exportPdf";
+import { exportElementAsWallpaper } from "@/lib/exportWallpaper";
 import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
 
 export interface MergedSelectedDay {
@@ -30,6 +33,7 @@ interface Props {
   onOpsScheduleUpdate: (schedule: ParsedSchedule) => void;
   onBoardingScheduleUpdate: (schedule: ParsedSchedule) => void;
   onBackup?: () => void;
+  onPdfExportReady?: (actions: PdfExportActions | null) => void;
 }
 
 export default function DualScheduleView({
@@ -44,12 +48,15 @@ export default function DualScheduleView({
   onOpsScheduleUpdate,
   onBoardingScheduleUpdate,
   onBackup,
+  onPdfExportReady,
 }: Props) {
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [selected, setSelected] = useState<MergedSelectedDay | null>(null);
   const [editState, setEditState] = useState<{ target: "ops" | "boarding"; day: DaySchedule } | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isWallpaper, setIsWallpaper] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+  const wallpaperRef = useRef<HTMLDivElement>(null);
 
   const hasAny = !!opsSchedule || !!boardingSchedule;
   const opsDays = opsSchedule?.days ?? [];
@@ -82,6 +89,42 @@ export default function DualScheduleView({
       setIsPrinting(false);
     }
   }, [hasAny, pdfFilename, pdfTitle, opsTarget, boardingTarget]);
+
+  useEffect(() => {
+    if (!onPdfExportReady) return;
+    onPdfExportReady({
+      disabled: !hasAny || isPrinting || isWallpaper,
+      onDownload: () => { void handlePdf("download"); },
+      onShare: () => { void handlePdf("share"); },
+    });
+    return () => onPdfExportReady(null);
+  }, [onPdfExportReady, handlePdf, hasAny, isPrinting, isWallpaper]);
+
+  const wallpaperFilename = `배경화면_함께_${opsTarget}_${boardingTarget}_${year}년${month}월_1600x900.png`;
+
+  const handleWallpaper = useCallback(async () => {
+    if (!hasAny) {
+      alert("내보낼 함께 근무표가 없습니다. 먼저 일정을 업로드해 주세요.");
+      return;
+    }
+    setIsWallpaper(true);
+    await new Promise((r) => setTimeout(r, 350));
+    try {
+      const el = wallpaperRef.current;
+      if (!el) return;
+      await exportElementAsWallpaper(el, wallpaperFilename);
+      window.setTimeout(() => {
+        alert(
+          `배경화면 PNG가 저장되었습니다.\n(${wallpaperFilename})\n\nWindows: 설정 → 개인 설정 → 배경 에서 이미지를 지정하세요.`,
+        );
+      }, 300);
+    } catch (e) {
+      console.error(e);
+      alert("배경화면 생성에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsWallpaper(false);
+    }
+  }, [hasAny, wallpaperFilename]);
 
   const refreshSelected = useCallback((nextOps: DaySchedule[], nextBoarding: DaySchedule[]) => {
     setSelected((prev) => {
@@ -162,23 +205,14 @@ export default function DualScheduleView({
           )}
           <button
             type="button"
-            className="btn btn-sm btn-pdf"
-            disabled={!hasAny || isPrinting}
+            className="btn btn-sm btn-secondary"
+            disabled={!hasAny || isPrinting || isWallpaper}
             onClick={() => {
-              void handlePdf("download");
+              void handleWallpaper();
             }}
+            title="PC 1600×900 PNG · TODAY 표시"
           >
-            PDF 저장
-          </button>
-          <button
-            type="button"
-            className="btn btn-sm btn-pdf"
-            disabled={!hasAny || isPrinting}
-            onClick={() => {
-              void handlePdf("share");
-            }}
-          >
-            PDF 공유
+            배경화면
           </button>
           {opsSchedule && (
             <button
@@ -275,7 +309,16 @@ export default function DualScheduleView({
         />
       )}
 
-      <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+      <div
+        style={{
+          position: "fixed",
+          left: -10000,
+          top: 0,
+          pointerEvents: "none",
+          zIndex: -1,
+        }}
+        aria-hidden
+      >
         <DualPrintView
           ref={printRef}
           year={year}
@@ -285,13 +328,24 @@ export default function DualScheduleView({
           opsDays={opsDays}
           boardingDays={boardingDays}
         />
+        {isWallpaper && (
+          <DualWallpaperView
+            ref={wallpaperRef}
+            year={year}
+            month={month}
+            opsTarget={opsTarget}
+            boardingTarget={boardingTarget}
+            opsDays={opsDays}
+            boardingDays={boardingDays}
+          />
+        )}
       </div>
 
-      {isPrinting && (
+      {(isPrinting || isWallpaper) && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-6 text-white">
             <div className="text-3xl mb-2 text-center">⏳</div>
-            <p>PDF 생성 중...</p>
+            <p>{isWallpaper ? "배경화면 생성 중..." : "PDF 생성 중..."}</p>
           </div>
         </div>
       )}

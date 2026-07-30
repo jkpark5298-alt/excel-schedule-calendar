@@ -15,7 +15,7 @@ export const SHIFT_TIME_LABELS: Record<string, string> = {
 export const SHIFT_OPTIONS: ShiftCode[] = [
   "C", "A", "당", "休",
   "B7", "A5", "P", "D", "P6",
-  "연", "N", "교육",
+  "연", "N", "교육", "노조",
 ];
 
 export function normalizeShift(raw: string | null | undefined): ShiftCode {

@@ -226,8 +226,10 @@ body {
 .layout-mode-row {
   display: flex;
   justify-content: center;
-  gap: 4px;
-  padding: 0 16px 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 12px 10px;
 }
 
 .layout-mode-btn {
@@ -244,6 +246,41 @@ body {
 .layout-mode-btn.active {
   background: #0a84ff;
   color: #fff;
+}
+
+.layout-mode-pdf {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 4px;
+}
+
+.layout-mode-pdf .btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  line-height: 1.2;
+}
+
+/* 아이폰 레이아웃 — 일자 셀 기존 크기 유지 */
+.iphone-app.layout-phone .ios-day-cell:not(.merged-day-cell) {
+  --ios-day-cell-h: 92px;
+  height: var(--ios-day-cell-h);
+  min-height: var(--ios-day-cell-h);
+  max-height: var(--ios-day-cell-h);
+  overflow: hidden;
+}
+
+.iphone-app.layout-phone .ios-day-cell.boarding-skd:not(.merged-day-cell) {
+  --ios-day-cell-h: 88px;
+}
+
+.iphone-app.layout-phone .merged-day-cell {
+  --ios-day-cell-h: 118px;
+  height: var(--ios-day-cell-h);
+  min-height: var(--ios-day-cell-h);
+  max-height: var(--ios-day-cell-h);
+  overflow: hidden;
 }
 
 /* PC layout: wider calendar, auto-growing day cells */
@@ -415,13 +452,22 @@ body {
 .iphone-toolbar {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  gap: 8px;
+  gap: 8px 10px;
   margin-bottom: 10px;
 }
 
-.iphone-toolbar-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+.iphone-toolbar-btns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.iphone-toolbar-compact {
+  justify-content: flex-start;
+}
 
 .iphone-zoom-label {
   font-size: 12px;
@@ -1025,6 +1071,23 @@ body {
   color: #000;
 }
 
+.ios-month-ops-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  padding: 6px 14px 10px;
+  border-bottom: 1px solid #e5e5ea;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #3a3a3c;
+  line-height: 1.35;
+}
+
+.ios-month-ops-stats span {
+  white-space: nowrap;
+}
+
 .ios-month-grid {
   display: flex;
   flex-direction: column;
@@ -1433,9 +1496,9 @@ body {
     --ios-day-slot-h-2: 40px;
   }
 
-  /* iPhone — 운항 캘린더: TYPE + 이름 줄 분리 */
+  /* 아이폰 — 기존 셀 높이 유지 (과도한 확대 방지) */
   .ios-day-cell:not(.boarding-skd) {
-    --ios-day-cell-h: 118px;
+    --ios-day-cell-h: 92px;
   }
 
   .ios-day-slot-lines-2 {
@@ -1461,7 +1524,7 @@ body {
   }
 
   .merged-day-cell {
-    --ios-day-cell-h: 156px;
+    --ios-day-cell-h: 118px;
   }
 
   .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) { font-size: 10px; }

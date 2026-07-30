@@ -4,6 +4,12 @@ import type { LayoutMode } from "@/lib/layoutMode";
 
 export type PersonTab = "ops" | "boarding" | "dual";
 
+export interface PdfExportActions {
+  disabled?: boolean;
+  onDownload: () => void;
+  onShare: () => void;
+}
+
 interface Props {
   year: number;
   month: number;
@@ -19,11 +25,12 @@ interface Props {
   boardingTarget: string;
   layoutMode: LayoutMode;
   onLayoutModeChange: (mode: LayoutMode) => void;
+  pdfExport?: PdfExportActions | null;
 }
 
 export default function MonthNavigator({
   year, month, canPrev, canNext, onPrev, onNext, onToday, activeTab, onSwitchTab, onUpload,
-  opsTarget, boardingTarget, layoutMode, onLayoutModeChange,
+  opsTarget, boardingTarget, layoutMode, onLayoutModeChange, pdfExport = null,
 }: Props) {
   const subtitle = activeTab === "dual"
     ? `${opsTarget} + ${boardingTarget} 합침`
@@ -87,6 +94,26 @@ export default function MonthNavigator({
         >
           PC
         </button>
+        {pdfExport && (
+          <div className="layout-mode-pdf">
+            <button
+              type="button"
+              className="btn btn-sm btn-pdf"
+              disabled={pdfExport.disabled}
+              onClick={pdfExport.onDownload}
+            >
+              PDF 저장
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-pdf"
+              disabled={pdfExport.disabled}
+              onClick={pdfExport.onShare}
+            >
+              PDF 공유
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

@@ -12,7 +12,7 @@ import {
   downloadBackup, getScheduleForPerson, importBackupJson, isScheduleLocked, listStoredMonths, loadStoredCalendar,
   saveScheduleForMonth, shiftMonth, toggleScheduleLock, writeStoredCalendar,
 } from "@/lib/scheduleStorage";
-import MonthNavigator, { PersonTab } from "./MonthNavigator";
+import MonthNavigator, { PersonTab, PdfExportActions } from "./MonthNavigator";
 import UploadModal from "./UploadModal";
 import ScheduleView from "./ScheduleView";
 import DualScheduleView from "./DualScheduleView";
@@ -37,6 +37,7 @@ export default function IphoneCalendarApp() {
   const [showBoardingInput, setShowBoardingInput] = useState(false);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("phone");
   const [hydrated, setHydrated] = useState(false);
+  const [pdfExport, setPdfExport] = useState<PdfExportActions | null>(null);
 
   useEffect(() => {
     void loadStoredCalendar().then(setStored);
@@ -143,6 +144,7 @@ export default function IphoneCalendarApp() {
 
   const switchTab = useCallback((tab: PersonTab) => {
     setActiveTab(tab);
+    setPdfExport(null);
     if (tab !== "dual") {
       handleTargetNameChange(tabToTargetName(tab));
     }
@@ -226,6 +228,7 @@ export default function IphoneCalendarApp() {
         boardingTarget={BOARDING_TARGET}
         layoutMode={layoutMode}
         onLayoutModeChange={handleLayoutModeChange}
+        pdfExport={pdfExport}
       />
 
       {activeTab === "dual" ? (
@@ -241,6 +244,7 @@ export default function IphoneCalendarApp() {
           onOpsScheduleUpdate={handleScheduleUpdate}
           onBoardingScheduleUpdate={handleScheduleUpdate}
           onBackup={handleBackup}
+          onPdfExportReady={setPdfExport}
         />
       ) : schedule ? (
         <ScheduleView
@@ -253,6 +257,7 @@ export default function IphoneCalendarApp() {
           onBackup={handleBackup}
           onRestore={handleRestore}
           onBoardingInput={isBoardingPerson ? () => setShowBoardingInput(true) : undefined}
+          onPdfExportReady={setPdfExport}
         />
       ) : (
         <EmptyScheduleView

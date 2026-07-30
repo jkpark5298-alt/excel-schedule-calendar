@@ -8,9 +8,12 @@ import IosMonthCalendar from "./IosMonthCalendar";
 import EditDayModal from "./EditDayModal";
 import DaySkdPanel from "./DaySkdPanel";
 import PrintView from "./PrintView";
+import WallpaperView from "./WallpaperView";
 import PinHelpBanner from "./PinHelpBanner";
+import type { PdfExportActions } from "./MonthNavigator";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 import { exportElementAsPdf } from "@/lib/exportPdf";
+import { exportElementAsWallpaper } from "@/lib/exportWallpaper";
 import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
 
 interface Props {
@@ -23,10 +26,12 @@ interface Props {
   onBackup: () => void;
   onRestore: (file: File) => void;
   onBoardingInput?: () => void;
+  onPdfExportReady?: (actions: PdfExportActions | null) => void;
 }
 
 export default function ScheduleView({
   schedule, isLocked = false, onToggleLock, onScheduleUpdate, onDelete, onReupload, onBackup, onRestore, onBoardingInput,
+  onPdfExportReady,
 }: Props) {
   const [days, setDays] = useState<DaySchedule[]>(schedule.days);
   const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
@@ -34,9 +39,11 @@ export default function ScheduleView({
   const [addDay, setAddDay] = useState<{ date: number; dayOfWeek: string } | null>(null);
   const [showPinHelp, setShowPinHelp] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isWallpaper, setIsWallpaper] = useState(false);
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [leaderDateInput, setLeaderDateInput] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
+  const wallpaperRef = useRef<HTMLDivElement>(null);
   const restoreInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -104,7 +111,7 @@ export default function ScheduleView({
     if (lastTarget) setSelectedDay(lastTarget);
   }, [days, leaderDateInput, persist]);
 
-  const handlePDF = async (mode: "download" | "share" | "auto" = "auto") => {
+  const handlePDF = useCallback(async (mode: "download" | "share" | "auto" = "auto") => {
     setIsPrinting(true);
     await new Promise((r) => setTimeout(r, 100));
     try {
@@ -121,6 +128,37 @@ export default function ScheduleView({
       alert("PDF 생성에 실패했습니다. 다시 시도해 주세요.");
     } finally {
       setIsPrinting(false);
+    }
+  }, [schedule.targetName, schedule.year, schedule.month]);
+
+  useEffect(() => {
+    if (!onPdfExportReady) return;
+    onPdfExportReady({
+      disabled: isPrinting || isWallpaper,
+      onDownload: () => { void handlePDF("download"); },
+      onShare: () => { void handlePDF("share"); },
+    });
+    return () => onPdfExportReady(null);
+  }, [onPdfExportReady, handlePDF, isPrinting, isWallpaper]);
+
+  const handleWallpaper = async () => {
+    setIsWallpaper(true);
+    await new Promise((r) => setTimeout(r, 350));
+    try {
+      const el = wallpaperRef.current;
+      if (!el) return;
+      const filename = `배경화면_${schedule.targetName}_${schedule.year}년${schedule.month}월_1600x900.png`;
+      await exportElementAsWallpaper(el, filename);
+      window.setTimeout(() => {
+        alert(
+          `배경화면 PNG가 저장되었습니다.\n(${filename})\n\nWindows: 설정 → 개인 설정 → 배경 에서 이미지를 지정하세요.`,
+        );
+      }, 300);
+    } catch (e) {
+      console.error(e);
+      alert("배경화면 생성에 실패했습니다. 다시 시도해 주세요.");
+    } finally {
+      setIsWallpaper(false);
     }
   };
 
@@ -150,8 +188,7 @@ export default function ScheduleView({
           )}
           <button type="button" className="btn btn-sm btn-secondary" onClick={onBackup} title="전체 캘린더 JSON을 PC에 저장">PC 저장</button>
           <button type="button" className="btn btn-sm btn-secondary" onClick={() => restoreInputRef.current?.click()}>복원</button>
-          <button type="button" className="btn btn-sm btn-pdf" disabled={isPrinting} onClick={() => { void handlePDF("download"); }}>PDF 저장</button>
-          <button type="button" className="btn btn-sm btn-pdf" disabled={isPrinting} onClick={() => { void handlePDF("share"); }}>PDF 공유</button>
+          <button type="button" className="btn btn-sm btn-secondary" disabled={isPrinting || isWallpaper} onClick={() => { void handleWallpaper(); }} title="PC 1600×900 PNG · TODAY 표시">배경화면</button>
           <button
             type="button"
             className="btn btn-sm btn-secondary"
@@ -221,6 +258,7 @@ export default function ScheduleView({
         onZoomChange={setZoom}
         onSelect={(day) => handleSelect(day)}
         onEmptyDayClick={handleEmptyDayClick}
+        showOpsStats={!boardingMode}
       />
 
       {selectedDay && !editDay && (
@@ -259,15 +297,27 @@ export default function ScheduleView({
       )}
       {showPinHelp && <PinHelpBanner onClose={() => setShowPinHelp(false)} />}
 
-      <div style={{ position: "absolute", left: "-9999px", top: 0 }}>
+      <div
+        style={{
+          position: "fixed",
+          left: -10000,
+          top: 0,
+          pointerEvents: "none",
+          zIndex: -1,
+        }}
+        aria-hidden
+      >
         <PrintView ref={printRef} schedule={{ ...schedule, days }} days={days} />
+        {isWallpaper && (
+          <WallpaperView ref={wallpaperRef} schedule={{ ...schedule, days }} days={days} />
+        )}
       </div>
 
-      {isPrinting && (
+      {(isPrinting || isWallpaper) && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-slate-800 rounded-xl p-6 text-white">
             <div className="text-3xl mb-2 text-center">⏳</div>
-            <p>PDF 생성 중...</p>
+            <p>{isWallpaper ? "배경화면 생성 중..." : "PDF 생성 중..."}</p>
           </div>
         </div>
       )}

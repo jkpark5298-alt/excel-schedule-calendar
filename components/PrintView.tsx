@@ -3,6 +3,8 @@
 import { forwardRef } from "react";
 import { ParsedSchedule, DaySchedule } from "@/types/schedule";
 import { groupDaysIntoWeeks, WEEKDAYS } from "@/lib/groupWeeks";
+import { isBoardingSchedule } from "@/lib/shiftDisplay";
+import { computeOpsMonthStats, formatWon } from "@/lib/opsMonthStats";
 
 interface Props {
   schedule: ParsedSchedule;
@@ -19,6 +21,7 @@ function shiftColor(shift: string): string {
 
 const PrintView = forwardRef<HTMLDivElement, Props>(({ schedule, days }, ref) => {
   const weeks = groupDaysIntoWeeks(days);
+  const opsStats = !isBoardingSchedule(days) ? computeOpsMonthStats(days) : null;
 
   return (
     <div
@@ -34,9 +37,15 @@ const PrintView = forwardRef<HTMLDivElement, Props>(({ schedule, days }, ref) =>
       <h1 style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "4px", color: "#0f172a" }}>
         {schedule.targetName}의 근무표
       </h1>
-      <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "20px" }}>
+      <p style={{ color: "#64748b", fontSize: "13px", marginBottom: opsStats ? "8px" : "20px" }}>
         {schedule.year}년 {schedule.month}월 | 총 {days.length}일 | 일요일 시작 주간표
       </p>
+      {opsStats && (
+        <p style={{ color: "#334155", fontSize: "13px", fontWeight: 600, marginBottom: "20px" }}>
+          근무 {opsStats.workDays}일 · 출근 {opsStats.attendanceDays}일 · 식권 {opsStats.mealTickets}장 ·
+          식권비 {formatWon(opsStats.mealCost)} · 출근보조 {formatWon(opsStats.commuteAllowance)}
+        </p>
+      )}
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "6px", marginBottom: "8px" }}>
         {WEEKDAYS.map((dow, i) => (
