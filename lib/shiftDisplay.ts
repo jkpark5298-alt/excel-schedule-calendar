@@ -167,30 +167,40 @@ export function skdPillCoworkerLines(day: DaySchedule): string[] {
 }
 
 /**
- * 상단 표시용 줄
- * - 리더: [TYPE, 이름1, 이름2…] 칸 분리
- * - 비리더: ["C/이영식"] 기존 한 줄
+ * 상단 표시용 줄 (패널/인쇄 호환 문자열)
+ * - 리더: 👍TYPE/이름1 + 추가 이름
+ * - 비리더: TYPE/이름1 + 추가 이름
  */
 export function skdPillTopLines(day: DaySchedule): string[] {
-  if (day.isLeader) {
-    return [skdPillTypeLabel(day), ...skdPillCoworkerLines(day)];
-  }
   const display = formatShiftDisplay(day.myShift);
-  if (isRestShift(day.myShift) || day.sameShiftCoworkers.length === 0) {
+  const coworkers = skdPillCoworkerLines(day);
+  if (day.isLeader) {
+    const type = skdPillTypeLabel(day);
+    if (coworkers.length === 0) return [type];
+    const [first, ...rest] = coworkers;
+    return [`${type}/${first}`, ...rest];
+  }
+  if (isRestShift(day.myShift) || coworkers.length === 0) {
     return [display];
   }
-  return [`${display}/${day.sameShiftCoworkers.join("/")}`];
+  const [first, ...rest] = coworkers;
+  return [`${display}/${first}`, ...rest];
 }
 
 /**
- * 검정 하단 줄: 첫째 줄 TYPE만, 이후 이름 1명씩 한 줄
- * 예) C / 김지성 / 정찬호
+ * 검정 하단 줄 (패널/인쇄 호환)
+ * - 첫 행 개념: TYPE + 첫 이름, 이후 이름
  */
 export function skdPillBottomLines(day: DaySchedule): string[] {
   const rc = day.relatedCoworkers;
   if (!rc || rc.names.length === 0) return [];
   const prefix = rc.label || String(rc.type);
-  return [prefix, ...rc.names];
+  // A(익일): TYPE 단독 행 + 이름들 / 그 외: TYPE/첫이름
+  if (prefix.includes("익일")) {
+    return [prefix, ...rc.names];
+  }
+  const [first, ...rest] = rc.names;
+  return [`${prefix}/${first}`, ...rest];
 }
 
 /** Main pill (단일 문자열, 인쇄 등 호환) */

@@ -262,38 +262,58 @@ body {
   line-height: 1.2;
 }
 
-/* 아이폰 레이아웃 — 일자 셀 세로 압축 */
+/* 아이폰 레이아웃 — 일자 셀 세로 압축 (내용+소여백) */
+.iphone-app.layout-phone .ios-week-row {
+  align-items: flex-start;
+}
+
 .iphone-app.layout-phone .ios-day-cell:not(.merged-day-cell) {
-  --ios-day-cell-h: 70px;
-  --ios-day-slot-h: 18px;
-  --ios-day-slot-h-2: 22px;
-  --ios-day-slot-compact-h: 20px;
-  height: var(--ios-day-cell-h);
+  --ios-day-cell-h: 28px;
+  --ios-day-slot-h: 16px;
+  --ios-day-slot-h-2: 20px;
+  --ios-day-slot-compact-h: 18px;
+  height: auto;
   min-height: var(--ios-day-cell-h);
-  max-height: var(--ios-day-cell-h);
+  max-height: none;
   overflow: hidden;
-  padding: 1px 2px 2px;
+  padding: 1px 2px 1px;
+  align-self: flex-start;
 }
 
 .iphone-app.layout-phone .ios-day-cell.boarding-skd:not(.merged-day-cell) {
-  --ios-day-cell-h: 56px;
+  --ios-day-cell-h: 52px;
+  height: auto;
+  min-height: var(--ios-day-cell-h);
+  max-height: none;
 }
 
 .iphone-app.layout-phone .merged-day-cell {
-  --ios-day-cell-h: 96px;
-  height: var(--ios-day-cell-h);
+  --ios-day-cell-h: 90px;
+  height: auto;
   min-height: var(--ios-day-cell-h);
-  max-height: var(--ios-day-cell-h);
+  max-height: none;
   overflow: hidden;
 }
 
 .iphone-app.layout-phone .ios-day-events {
   gap: 0;
   margin-top: 0;
+  flex: 0 0 auto;
 }
 
 .iphone-app.layout-phone .ios-day-events-ops {
   gap: 1px;
+}
+
+.iphone-app.layout-phone .ios-day-slot-auto {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  height: auto;
+}
+
+.iphone-app.layout-phone .ios-day-slot-auto .ios-skd-pill-stack {
+  height: auto;
 }
 
 .iphone-app.layout-phone .ios-day-slot-compact {
@@ -303,7 +323,7 @@ body {
 }
 
 .iphone-app.layout-phone .ios-day-slot-boarding-stack {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
   max-height: none;
   align-items: stretch;
@@ -311,7 +331,7 @@ body {
 
 .iphone-app.layout-phone .ios-skd-pill-boarding-dual {
   min-height: 0;
-  height: 100%;
+  height: auto;
   padding: 1px 2px;
   gap: 0;
 }
@@ -326,6 +346,11 @@ body {
 
 .iphone-app.layout-phone .ios-skd-pill-sub-names {
   font-size: 9px;
+}
+
+.iphone-app.layout-phone .ios-skd-line {
+  font-size: 9px;
+  line-height: 1.15;
 }
 
 .iphone-app.layout-phone .merged-ops-block,
@@ -536,12 +561,31 @@ body {
   text-align: center;
 }
 
-.iphone-leader-row {
-  display: flex;
+.iphone-toolbar-btns-inline {
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  margin-top: 6px;
+  gap: 4px;
+  overflow-x: auto;
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+.iphone-toolbar-ops-edit {
+  margin-bottom: 8px;
+}
+
+.iphone-toolbar-ops-edit .iphone-leader-label {
+  margin: 0;
+  white-space: nowrap;
+  font-size: 11px;
+}
+
+.iphone-toolbar-ops-edit .iphone-leader-input {
+  width: 56px;
+  min-width: 48px;
+  margin: 0;
+  padding: 4px 6px;
+  font-size: 12px;
 }
 
 .iphone-leader-label {
@@ -945,6 +989,8 @@ body {
   .week-row { gap: 3px; margin-bottom: 3px; }
   .iphone-schedule-body { padding: 8px 6px; }
   .iphone-toolbar-compact { flex-direction: column; align-items: stretch; }
+  .iphone-toolbar-ops-edit { flex-direction: row; align-items: center; }
+  .iphone-toolbar-ops-edit .iphone-toolbar-btns-inline { flex-wrap: nowrap; }
   .iphone-stats { justify-content: center; gap: 8px; font-size: 12px; }
   .iphone-toolbar-btns { justify-content: center; }
 }
@@ -1276,6 +1322,17 @@ body {
   max-height: var(--ios-day-slot-compact-h, 20px);
 }
 
+.ios-day-slot-auto {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  height: auto;
+}
+
+.ios-day-slot-auto .ios-skd-pill-stack {
+  height: auto;
+}
+
 .ios-day-slot-boarding-stack {
   flex: 1 1 auto;
   min-height: 0;
@@ -1284,8 +1341,113 @@ body {
   align-items: stretch;
 }
 
-.ios-skd-pill-black-one {
-  justify-content: center;
+/* TYPE + 이름 열 맞춤 — A/강정형 / 아래 이름·검정 동일 열 */
+.ios-skd-type-grid {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  width: 100%;
+  line-height: 1.2;
+  column-gap: 0;
+  row-gap: 0;
+}
+
+.ios-skd-type-row {
+  display: contents;
+}
+
+.ios-skd-type-prefix {
+  white-space: pre;
+  font-weight: inherit;
+}
+
+.ios-skd-type-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: inherit;
+}
+
+/* 리더 — 👍TYPE/이름 한 행·작은 글씨 */
+.ios-skd-type-grid-sm {
+  font-size: 7px !important;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.25;
+}
+
+.ios-skd-type-grid-sm .ios-skd-type-prefix,
+.ios-skd-type-grid-sm .ios-skd-type-name {
+  white-space: pre;
+  font-size: inherit;
+}
+
+.ios-skd-pill-leader .ios-skd-type-grid-sm {
+  font-size: 6.5px !important;
+}
+
+.ios-skd-line-sm {
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+}
+
+.ios-skd-pill-sub-names .ios-skd-type-grid {
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.iphone-app.layout-phone .ios-skd-type-grid-sm {
+  font-size: 6.5px;
+}
+
+.iphone-app.layout-phone .ios-skd-pill-sub-names .ios-skd-type-grid {
+  font-size: 8px;
+}
+
+.ios-skd-type-own {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start;
+  width: 100%;
+  line-height: 1.2;
+  min-width: 0;
+  white-space: normal !important;
+}
+
+.ios-skd-type-own-label {
+  display: block !important;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: inherit;
+}
+
+.ios-skd-type-own-name {
+  display: block !important;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: inherit;
+}
+
+.ios-skd-pill-stack .ios-skd-type-own {
+  white-space: normal !important;
+}
+
+.iphone-app.layout-phone .ios-skd-pill-sub-names .ios-skd-type-own {
+  font-size: 8px;
+}
+
+.iphone-app.layout-phone .ios-day-cell:not(.boarding-skd):not(.merged-day-cell) {
+  overflow: visible;
+}
+
+.iphone-app.layout-phone .ios-day-events-ops {
+  overflow: visible;
 }
 
 .ios-day-events-boarding .ios-day-slot-bottom {
@@ -1358,6 +1520,12 @@ body {
   text-align: left;
 }
 
+.ios-skd-pill.ios-skd-pill-stack {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: unset;
+}
+
 /* 상단 — 내 근무 (하단보다 굵고 약간 큼) */
 .ios-skd-pill:not(.ios-skd-pill-sub-names) {
   font-size: 10px;
@@ -1390,15 +1558,12 @@ body {
 }
 
 .ios-skd-pill-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: flex-start;
-  gap: 1px;
+  display: block;
   white-space: normal;
   text-overflow: unset;
-  overflow: hidden;
-  height: 100%;
+  overflow: visible;
+  height: auto;
+  max-height: none;
   line-height: 1.15;
 }
 

@@ -110,7 +110,7 @@ export default function IosMonthCalendar({
                     <div className={`ios-day-events ${boarding ? "ios-day-events-boarding" : "ios-day-events-ops"}`}>
                       {!boarding ? (
                         schedule ? <OpsSkdPills day={schedule} compact /> : (
-                          <div className="ios-day-slot ios-day-slot-top ios-day-slot-compact" />
+                          <div className="ios-day-slot ios-day-slot-top ios-day-slot-auto" />
                         )
                       ) : (
                         <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-boarding-stack">

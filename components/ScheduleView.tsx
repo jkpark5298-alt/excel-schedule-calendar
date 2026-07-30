@@ -204,15 +204,15 @@ export default function ScheduleView({
           {onBoardingInput && (
             <button type="button" className="btn btn-sm btn-primary" onClick={onBoardingInput} disabled={isLocked}>SKD 입력</button>
           )}
-          <button type="button" className="btn btn-sm btn-danger" onClick={onDelete} disabled={isLocked}>삭제</button>
         </div>
         <input ref={restoreInputRef} type="file" accept=".json" className="hidden"
           onChange={(e) => { const f = e.target.files?.[0]; if (f) onRestore(f); e.target.value = ""; }} />
       </div>
 
       {!boardingMode && (
-        <div className="iphone-toolbar iphone-toolbar-compact">
-          <div className="iphone-toolbar-btns">
+        <div className="iphone-toolbar iphone-toolbar-compact iphone-toolbar-ops-edit">
+          <div className="iphone-toolbar-btns iphone-toolbar-btns-inline">
+            <button type="button" className="btn btn-sm btn-danger" onClick={onDelete} disabled={isLocked}>삭제</button>
             <button type="button" className="btn btn-sm btn-secondary" onClick={zoomOut} disabled={zoom <= ZOOM_MIN}>−</button>
             <span className="iphone-zoom-label">{Math.round(zoom * 100)}%</span>
             <button type="button" className="btn btn-sm btn-secondary" onClick={zoomIn} disabled={zoom >= ZOOM_MAX}>+</button>
@@ -224,8 +224,6 @@ export default function ScheduleView({
               const dow = DOW_KO[new Date(schedule.year, schedule.month - 1, date).getDay()];
               setAddDay({ date, dayOfWeek: dow });
             }} disabled={isLocked}>일정 추가</button>
-          </div>
-          <div className="iphone-leader-row">
             <label className="iphone-leader-label">리더 날짜</label>
             <input
               type="text"
@@ -242,6 +240,7 @@ export default function ScheduleView({
       {boardingMode && (
         <div className="iphone-toolbar iphone-toolbar-compact">
           <div className="iphone-toolbar-btns">
+            <button type="button" className="btn btn-sm btn-danger" onClick={onDelete} disabled={isLocked}>삭제</button>
             <button type="button" className="btn btn-sm btn-secondary" onClick={zoomOut} disabled={zoom <= ZOOM_MIN}>−</button>
             <span className="iphone-zoom-label">{Math.round(zoom * 100)}%</span>
             <button type="button" className="btn btn-sm btn-secondary" onClick={zoomIn} disabled={zoom >= ZOOM_MAX}>+</button>
