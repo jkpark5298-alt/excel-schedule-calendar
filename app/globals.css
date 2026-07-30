@@ -288,10 +288,10 @@ body {
 }
 
 .iphone-app.layout-phone .merged-day-cell {
-  --ios-day-cell-h: 90px;
-  height: auto;
+  --ios-day-cell-h: 96px;
+  height: var(--ios-day-cell-h);
   min-height: var(--ios-day-cell-h);
-  max-height: none;
+  max-height: var(--ios-day-cell-h);
   overflow: hidden;
 }
 
@@ -299,6 +299,13 @@ body {
   gap: 0;
   margin-top: 0;
   flex: 0 0 auto;
+}
+
+/* 함께: 일자 칸을 상·하가 동일 비율로 채움 */
+.iphone-app.layout-phone .merged-day-cell .ios-day-events.merged-day-events {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
 
 .iphone-app.layout-phone .ios-day-events-ops {
@@ -336,6 +343,20 @@ body {
   gap: 0;
 }
 
+/* 함께: 상·하 필 모두 블록 높이만큼 색 채움 (동일 비율) */
+.iphone-app.layout-phone .merged-day-cell .merged-ops-block .ios-skd-pill-ops-dual,
+.iphone-app.layout-phone .merged-day-cell .merged-boarding-block .ios-skd-pill-boarding-dual {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.iphone-app.layout-phone .merged-ops-block,
+.iphone-app.layout-phone .merged-boarding-block {
+  justify-content: stretch;
+  align-items: stretch;
+}
+
 .iphone-app.layout-phone .ios-skd-boarding-line:first-child {
   font-size: 10px;
 }
@@ -351,11 +372,6 @@ body {
 .iphone-app.layout-phone .ios-skd-line {
   font-size: 9px;
   line-height: 1.15;
-}
-
-.iphone-app.layout-phone .merged-ops-block,
-.iphone-app.layout-phone .merged-boarding-block {
-  justify-content: center;
 }
 
 .iphone-app.layout-phone .merged-pair-badge {
@@ -1268,8 +1284,9 @@ body {
   font-size: 11px;
   font-weight: 600;
   color: #000;
-  text-align: right;
-  padding-right: 3px;
+  text-align: left; /* date left — ops / boarding / dual */
+  padding-left: 3px;
+  padding-right: 0;
   line-height: 1.2;
   flex-shrink: 0;
 }
@@ -1282,8 +1299,14 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: auto;
+  margin-left: 0;
+  margin-right: auto;
   font-size: 10px;
+}
+
+.ios-day-cell > .ios-day-num {
+  text-align: left;
+  align-self: flex-start;
 }
 
 .ios-day-events {
@@ -1899,22 +1922,27 @@ body {
   gap: 0;
   flex: 0 0 auto;
   min-width: 0;
+  min-height: 0;
   overflow: hidden;
   align-items: stretch;
-  justify-content: center;
+  justify-content: stretch;
 }
 
+/* 박종규 필 — 김현숙과 동일하게 블록 전체 색 채움 */
 .merged-ops-block .ios-skd-pill-ops-dual {
   width: 100%;
+  height: 100%;
   min-height: 0;
-  height: auto;
+  flex: 1 1 auto;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .merged-day-events.half-split .merged-ops-block,
 .merged-day-events.has-pair .merged-ops-block,
 .merged-day-events.single-side .merged-ops-block {
   align-items: stretch;
+  justify-content: stretch;
 }
 
 .merged-pair-badge {
@@ -1958,17 +1986,36 @@ body {
   flex: 0 0 auto;
   min-height: 0;
   margin-top: 0;
-  padding-top: 2px;
+  padding-top: 1px;
   border-top: 1px dashed #e5e5ea;
   overflow: hidden;
   min-width: 0;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
 }
 
 .merged-boarding-block .ios-skd-pill-boarding-dual {
   min-height: 0;
   height: 100%;
   width: 100%;
+  flex: 1 1 auto;
+  box-sizing: border-box;
+}
+
+/* 함께 반반/페어: 상·하 블록·필 높이 동일 */
+.merged-day-events.half-split .merged-ops-block .ios-skd-pill,
+.merged-day-events.half-split .merged-boarding-block .ios-skd-pill,
+.merged-day-events.has-pair .merged-ops-block .ios-skd-pill,
+.merged-day-events.has-pair .merged-boarding-block .ios-skd-pill,
+.merged-day-events.single-side .merged-ops-block .ios-skd-pill,
+.merged-day-events.single-side .merged-boarding-block .ios-skd-pill {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .merged-empty-tag {
