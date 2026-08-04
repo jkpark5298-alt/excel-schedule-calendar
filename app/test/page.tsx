@@ -26,7 +26,10 @@ function makeDay(date: number, shift: ShiftCode, dayOfWeek: string): DaySchedule
 const OPS_DAYS: DaySchedule[] = [
   makeDay(1, "休", "수"),
   makeDay(2, "休", "목"),
-  makeDay(3, "C", "금"),
+  {
+    ...makeDay(3, "C", "금"),
+    sameShiftCoworkers: ["이영식"],
+  },
   makeDay(4, "A", "토"),
   makeDay(5, "休", "일"),
   makeDay(6, "休", "월"),
