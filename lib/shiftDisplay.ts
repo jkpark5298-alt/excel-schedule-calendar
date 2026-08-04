@@ -14,7 +14,7 @@ export const SHIFT_TIME_LABELS: Record<string, string> = {
 
 export const SHIFT_OPTIONS: ShiftCode[] = [
   "C", "A", "당", "休",
-  "B7", "A5", "P", "D", "P6",
+  "B7", "A5", "P", "D", "P6", "P7",
   "연", "N", "교육", "노조",
 ];
 
@@ -25,8 +25,8 @@ export function normalizeShift(raw: string | null | undefined): ShiftCode {
   return s as ShiftCode;
 }
 
-export const BOARDING_SHIFTS = new Set(["B7", "A5", "P", "D", "P6", "교육"]);
-export const BOARDING_SHIFT_OPTIONS: ShiftCode[] = ["B7", "A5", "P", "D", "P6", "休", "교육"];
+export const BOARDING_SHIFTS = new Set(["B7", "A5", "P", "D", "P6", "P7", "교육"]);
+export const BOARDING_SHIFT_OPTIONS: ShiftCode[] = ["B7", "A5", "P", "D", "P6", "P7", "休", "교육"];
 export const BOARDING_TARGET = "김현숙";
 
 /** 탑승수속 월간 스케줄 여부 (B7/A5/P/D/P6 포함 시) */
@@ -58,9 +58,10 @@ export function isRestShift(shift: ShiftCode): boolean {
 
 /**
  * 함께 캘린더 중간 표기 (박종규 × 김현숙)
- * C+P → 동시出 / C+D → 교대出退 / 休+P|P6|B7 → 현숙🚗 / 休+休 → 동시休 / A+A5 → 동시退 / 休+A5 → PICK UP
+ * C+P → 동시出 / C+D → 교대出退
+ * 休+P|P6|P7|B7|교육 → 현숙🚗 / 休+休 → 동시休 / A+A5 → 동시退 / 休+A5 → PICK UP
  */
-const HYUNSOOK_DRIVE_BOARDING = new Set(["P", "P6", "B7"]);
+const HYUNSOOK_DRIVE_BOARDING = new Set(["P", "P6", "P7", "B7", "교육"]);
 
 export function getDualPairLabel(
   opsShift: ShiftCode | null | undefined,
@@ -89,6 +90,7 @@ export function shiftClass(shift: ShiftCode): string {
   if (shift === "P") return "shift-p";
   if (shift === "D") return "shift-d";
   if (shift === "P6") return "shift-p6";
+  if (shift === "P7") return "shift-p7";
   return "shift-other";
 }
 
@@ -102,6 +104,7 @@ export function skdPillClass(shift: string): string {
   if (shift === "P") return "skd-pill-p";
   if (shift === "D") return "skd-pill-d";
   if (shift === "P6") return "skd-pill-p6";
+  if (shift === "P7") return "skd-pill-p7";
   return "skd-pill-other";
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { DaySchedule, ShiftCode } from "@/types/schedule";
 import { DOW_KO } from "@/lib/monthGrid";
 import ShiftBadge from "./ShiftBadge";
@@ -16,6 +16,14 @@ interface Props {
   onClose: () => void;
 }
 
+/** 운항 SKD: A→C, C→당, 당→A(익일) */
+function relatedMetaForShift(shift: ShiftCode): { type: ShiftCode; label: string } | null {
+  if (shift === "A") return { type: "C", label: "C" };
+  if (shift === "C") return { type: "당", label: "당" };
+  if (shift === "당") return { type: "A", label: "A(익일)" };
+  return null;
+}
+
 export default function EditDayModal({
   mode = "edit", day, year, month, shiftOptions = SHIFT_OPTIONS, onSave, onClose,
 }: Props) {
@@ -24,6 +32,9 @@ export default function EditDayModal({
   const [myShift, setMyShift] = useState<ShiftCode>(day.myShift);
   const [isLeader, setIsLeader] = useState(day.isLeader);
   const [coworkersText, setCoworkersText] = useState(day.sameShiftCoworkers.join(", "));
+  const [relatedText, setRelatedText] = useState(day.relatedCoworkers?.names.join(", ") ?? "");
+
+  const relatedMeta = useMemo(() => relatedMetaForShift(myShift), [myShift]);
 
   const handleDateChange = (nextDate: number) => {
     setDate(nextDate);
@@ -32,11 +43,39 @@ export default function EditDayModal({
     }
   };
 
+  const handleShiftChange = (next: ShiftCode) => {
+    const prevMeta = relatedMetaForShift(myShift);
+    const nextMeta = relatedMetaForShift(next);
+    setMyShift(next);
+    if (!nextMeta) {
+      setRelatedText("");
+      return;
+    }
+    if (!prevMeta || prevMeta.type !== nextMeta.type) {
+      setRelatedText(
+        day.relatedCoworkers?.type === nextMeta.type
+          ? day.relatedCoworkers.names.join(", ")
+          : "",
+      );
+    }
+  };
+
   const handleSave = () => {
     const sameShiftCoworkers = coworkersText
       .split(/[,，、]/)
       .map(s => s.trim())
       .filter(Boolean);
+
+    const relatedNames = relatedText
+      .split(/[,，、]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const meta = relatedMetaForShift(myShift);
+    const relatedCoworkers = meta && relatedNames.length > 0
+      ? { type: meta.type, names: relatedNames, label: meta.label }
+      : null;
+
     onSave({
       ...day,
       date,
@@ -44,6 +83,7 @@ export default function EditDayModal({
       myShift,
       isLeader,
       sameShiftCoworkers,
+      relatedCoworkers,
     });
   };
 
@@ -76,7 +116,7 @@ export default function EditDayModal({
               <button
                 key={s}
                 type="button"
-                onClick={() => setMyShift(s)}
+                onClick={() => handleShiftChange(s)}
                 className={`py-2 rounded-lg text-sm font-bold border transition-all ${
                   myShift === s
                     ? "border-violet-500 bg-violet-900/50"
@@ -98,6 +138,26 @@ export default function EditDayModal({
             placeholder="김국현, 정찬호"
           />
         </div>
+
+        {relatedMeta && (
+          <div className="mb-4">
+            <label className="text-sm text-slate-400 mb-2 block">
+              {relatedMeta.label} 근무자 (쉼표 구분)
+            </label>
+            <input
+              className="iphone-input w-full"
+              value={relatedText}
+              onChange={(e) => setRelatedText(e.target.value)}
+              placeholder={
+                relatedMeta.label === "C"
+                  ? "C 근무자 이름"
+                  : relatedMeta.label === "당"
+                    ? "당 근무자 이름"
+                    : "익일 A 근무자 이름"
+              }
+            />
+          </div>
+        )}
 
         <div className="mb-6">
           <label className="flex items-center gap-3 cursor-pointer">

@@ -10,6 +10,7 @@
   --shift-p: #7c3aed;
   --shift-d: #ea580c;
   --shift-p6: #db2777;
+  --shift-p7: #c026a0;
 }
 
 body {
@@ -34,6 +35,7 @@ body {
 .shift-p { color: var(--shift-p); font-weight: 700; }
 .shift-d { color: var(--shift-d); font-weight: 700; }
 .shift-p6 { color: var(--shift-p6); font-weight: 700; }
+.shift-p7 { color: var(--shift-p7); font-weight: 700; }
 .shift-other { color: #94a3b8; }
 
 .day-card {
@@ -1628,6 +1630,7 @@ body {
 .skd-pill-p { background: #ede9fe; color: #7c3aed; }
 .skd-pill-d { background: #ffedd5; color: #ea580c; }
 .skd-pill-p6 { background: #fce7f3; color: #db2777; }
+.skd-pill-p7 { background: #fce7f3; color: #c026a0; }
 .skd-pill-other { background: #f1f5f9; color: #64748b; }
 
 /* Bottom SKD panel (selected day) */

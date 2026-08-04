@@ -33,6 +33,8 @@ const OPS_DAYS: DaySchedule[] = [
   makeDay(4, "A", "토"),
   makeDay(5, "休", "일"),
   makeDay(6, "休", "월"),
+  makeDay(7, "休", "화"),
+  makeDay(8, "休", "수"),
 ];
 
 const BOARDING_DAYS: DaySchedule[] = [
@@ -42,6 +44,8 @@ const BOARDING_DAYS: DaySchedule[] = [
   makeDay(4, "A5", "토"),
   makeDay(5, "A5", "일"),
   makeDay(6, "休", "월"),
+  makeDay(7, "교육", "화"),
+  makeDay(8, "P7", "수"),
 ];
 
 const PAIR_SAMPLES = OPS_DAYS.map((opsDay, i) => {
@@ -61,7 +65,7 @@ export default function TestMergedCalendarPage() {
         <p className="test-merged-badge">TEST</p>
         <h1>함께 캘린더 미리보기</h1>
         <p className="test-merged-desc">
-          1일 P6 · 2일 B7 → <strong>현숙🚗</strong> · 일자 칸 높이 20% 축소
+          1일 P6 · 2일 B7 · 7일 교육 · 8일 P7 → <strong>현숙🚗</strong>
         </p>
       </header>
 
