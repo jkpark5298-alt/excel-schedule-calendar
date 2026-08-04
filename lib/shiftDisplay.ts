@@ -58,8 +58,10 @@ export function isRestShift(shift: ShiftCode): boolean {
 
 /**
  * 함께 캘린더 중간 표기 (박종규 × 김현숙)
- * C+P → 동시出 / C+D → 교대出退 / 休+P → 현숙🚗 / 休+休 → 동시休 / A+A5 → 동시退 / 休+A5 → PICK UP
+ * C+P → 동시出 / C+D → 교대出退 / 休+P|P6|B7 → 현숙🚗 / 休+休 → 동시休 / A+A5 → 동시退 / 休+A5 → PICK UP
  */
+const HYUNSOOK_DRIVE_BOARDING = new Set(["P", "P6", "B7"]);
+
 export function getDualPairLabel(
   opsShift: ShiftCode | null | undefined,
   boardingShift: ShiftCode | null | undefined,
@@ -70,7 +72,7 @@ export function getDualPairLabel(
 
   if (ops === "C" && boarding === "P") return "동시出";
   if (ops === "C" && boarding === "D") return "교대出退";
-  if (ops === "休" && boarding === "P") return "현숙🚗";
+  if (ops === "休" && HYUNSOOK_DRIVE_BOARDING.has(boarding)) return "현숙🚗";
   if (ops === "休" && boarding === "休") return "동시休";
   if (ops === "休" && boarding === "A5") return "PICK UP";
   if (ops === "A" && boarding === "A5") return "동시退";
