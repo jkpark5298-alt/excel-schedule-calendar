@@ -13,6 +13,7 @@ import {
   saveScheduleForMonth, shiftMonth, toggleScheduleLock, writeStoredCalendar,
 } from "@/lib/scheduleStorage";
 import MonthNavigator, { PersonTab, PdfExportActions } from "./MonthNavigator";
+import IphoneToolTabs, { type ToolPanel } from "./IphoneToolTabs";
 import UploadModal from "./UploadModal";
 import ScheduleView from "./ScheduleView";
 import DualScheduleView from "./DualScheduleView";
@@ -38,6 +39,7 @@ export default function IphoneCalendarApp() {
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("phone");
   const [hydrated, setHydrated] = useState(false);
   const [pdfExport, setPdfExport] = useState<PdfExportActions | null>(null);
+  const [toolPanel, setToolPanel] = useState<ToolPanel>(null);
 
   useEffect(() => {
     void loadStoredCalendar().then(setStored);
@@ -145,6 +147,7 @@ export default function IphoneCalendarApp() {
   const switchTab = useCallback((tab: PersonTab) => {
     setActiveTab(tab);
     setPdfExport(null);
+    setToolPanel(null);
     if (tab !== "dual") {
       handleTargetNameChange(tabToTargetName(tab));
     }
@@ -226,13 +229,55 @@ export default function IphoneCalendarApp() {
         onUpload={() => (isBoardingPerson ? setShowBoardingInput(true) : setShowUpload(true))}
         opsTarget={OPS_TARGET}
         boardingTarget={BOARDING_TARGET}
-        layoutMode={layoutMode}
-        onLayoutModeChange={handleLayoutModeChange}
-        pdfExport={pdfExport}
       />
+
+      <IphoneToolTabs
+        active={toolPanel}
+        onChange={setToolPanel}
+        showLeader={activeTab !== "boarding"}
+      />
+      {toolPanel === "manage" && (
+        <div className="layout-mode-row iphone-manage-panel" role="group" aria-label="화면 형태">
+          <button
+            type="button"
+            className={`layout-mode-btn ${layoutMode === "phone" ? "active" : ""}`}
+            onClick={() => handleLayoutModeChange("phone")}
+          >
+            아이폰
+          </button>
+          <button
+            type="button"
+            className={`layout-mode-btn ${layoutMode === "pc" ? "active" : ""}`}
+            onClick={() => handleLayoutModeChange("pc")}
+          >
+            PC
+          </button>
+          {pdfExport && (
+            <div className="layout-mode-pdf">
+              <button
+                type="button"
+                className="btn btn-sm btn-pdf"
+                disabled={pdfExport.disabled}
+                onClick={pdfExport.onDownload}
+              >
+                PDF 저장
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm btn-pdf"
+                disabled={pdfExport.disabled}
+                onClick={pdfExport.onShare}
+              >
+                PDF 공유
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
       {activeTab === "dual" ? (
         <DualScheduleView
+          toolPanel={toolPanel}
           year={year}
           month={month}
           opsTarget={OPS_TARGET}
@@ -248,6 +293,7 @@ export default function IphoneCalendarApp() {
         />
       ) : schedule ? (
         <ScheduleView
+          toolPanel={toolPanel}
           schedule={schedule}
           isLocked={monthLocked}
           onToggleLock={handleToggleLock}
@@ -262,14 +308,19 @@ export default function IphoneCalendarApp() {
           onPdfExportReady={setPdfExport}
         />
       ) : (
-        <EmptyScheduleView
-          year={year}
-          month={month}
-          targetName={activeTargetName}
-          storedMonths={storedMonths}
-          onUpload={() => (isBoardingPerson ? setShowBoardingInput(true) : setShowUpload(true))}
-          onSelectMonth={(y, m) => { setYear(y); setMonth(m); }}
-        />
+        <>
+          {(toolPanel === "manage2" || toolPanel === "leader") && (
+            <p className="iphone-tool-empty-hint">근무표를 먼저 업로드해 주세요.</p>
+          )}
+          <EmptyScheduleView
+            year={year}
+            month={month}
+            targetName={activeTargetName}
+            storedMonths={storedMonths}
+            onUpload={() => (isBoardingPerson ? setShowBoardingInput(true) : setShowUpload(true))}
+            onSelectMonth={(y, m) => { setYear(y); setMonth(m); }}
+          />
+        </>
       )}
 
       {showUpload && !isBoardingPerson && (

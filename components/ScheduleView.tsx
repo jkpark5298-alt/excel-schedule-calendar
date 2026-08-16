@@ -12,6 +12,7 @@ import WallpaperView from "./WallpaperView";
 import PinHelpBanner from "./PinHelpBanner";
 import LeaderDateBar from "./LeaderDateBar";
 import type { PdfExportActions } from "./MonthNavigator";
+import type { ToolPanel } from "./IphoneToolTabs";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 import { exportElementAsPdf } from "@/lib/exportPdf";
 import { exportElementAsWallpaper } from "@/lib/exportWallpaper";
@@ -31,11 +32,12 @@ interface Props {
   onPdfExportReady?: (actions: PdfExportActions | null) => void;
   overlaySchedule?: ParsedSchedule | null;
   overlayName?: string;
+  toolPanel?: ToolPanel;
 }
 
 export default function ScheduleView({
   schedule, isLocked = false, onToggleLock, onScheduleUpdate, onDelete, onReupload, onBackup, onRestore, onBoardingInput,
-  onPdfExportReady, overlaySchedule = null, overlayName,
+  onPdfExportReady, overlaySchedule = null, overlayName, toolPanel = null,
 }: Props) {
   const [days, setDays] = useState<DaySchedule[]>(schedule.days);
   const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
@@ -68,6 +70,10 @@ export default function ScheduleView({
   useEffect(() => {
     setShowBoardingOverlay(loadShowBoardingOnOps());
   }, []);
+
+  useEffect(() => {
+    if (toolPanel !== "leader") setLeaderPickMode(false);
+  }, [toolPanel]);
 
   const persist = useCallback((nextDays: DaySchedule[]) => {
     const sorted = [...nextDays].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -208,13 +214,7 @@ export default function ScheduleView({
 
   return (
     <div className={`iphone-schedule-body ${selectedDay ? "with-panel" : ""}`}>
-      <div className="iphone-saved-badge">
-        <span className={`iphone-saved-dot ${isLocked ? "locked" : ""}`} />
-        {schedule.year}년 {schedule.month}월 {isLocked ? "확정됨" : "저장됨"} · 날짜 선택 시 SKD 표시
-        <button type="button" className="iphone-saved-help" onClick={() => setShowPinHelp(true)}>고정 방법</button>
-      </div>
-
-      {!boardingMode && (
+      {!boardingMode && toolPanel === "leader" && (
         <LeaderDateBar
           value={leaderDateInput}
           pickMode={leaderPickMode}
@@ -225,20 +225,8 @@ export default function ScheduleView({
         />
       )}
 
-      {!boardingMode && overlayName && (
-        <button
-          type="button"
-          className={`btn btn-sm iphone-overlay-toggle ${showBoardingOverlay ? "btn-primary" : "btn-secondary"}`}
-          onClick={toggleBoardingOverlay}
-        >
-          {showBoardingOverlay ? `${overlayName} 같이 보기 켜짐` : `${overlayName} 같이 보기`}
-        </button>
-      )}
-      {!boardingMode && showBoardingOverlay && !overlaySchedule && overlayName && (
-        <p className="iphone-overlay-hint">{overlayName} 탭에서 먼저 근무표를 업로드해 주세요.</p>
-      )}
-
-      <div className="iphone-toolbar iphone-toolbar-compact">
+      {toolPanel === "manage2" && (
+      <div className="iphone-toolbar iphone-toolbar-compact iphone-manage-panel">
         <div className="iphone-toolbar-btns">
           {onToggleLock && (
             <button
@@ -267,18 +255,33 @@ export default function ScheduleView({
           {onBoardingInput && (
             <button type="button" className="btn btn-sm btn-primary" onClick={onBoardingInput} disabled={isLocked}>SKD 입력</button>
           )}
+          <button type="button" className="btn btn-sm btn-secondary" onClick={zoomOut} disabled={zoom <= ZOOM_MIN}>−</button>
+          <span className="iphone-zoom-label">{Math.round(zoom * 100)}%</span>
+          <button type="button" className="btn btn-sm btn-secondary" onClick={zoomIn} disabled={zoom >= ZOOM_MAX}>+</button>
+          <button type="button" className="iphone-saved-help" onClick={() => setShowPinHelp(true)}>고정 방법</button>
         </div>
-        <input ref={restoreInputRef} type="file" accept=".json" className="hidden"
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) onRestore(f); e.target.value = ""; }} />
       </div>
+      )}
+      <input ref={restoreInputRef} type="file" accept=".json" className="hidden"
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) onRestore(f); e.target.value = ""; }} />
+
+      {!boardingMode && overlayName && (
+        <button
+          type="button"
+          className={`btn btn-sm iphone-overlay-toggle ${showBoardingOverlay ? "btn-primary" : "btn-secondary"}`}
+          onClick={toggleBoardingOverlay}
+        >
+          {showBoardingOverlay ? `${overlayName} 같이 보기 켜짐` : `${overlayName} 같이 보기`}
+        </button>
+      )}
+      {!boardingMode && showBoardingOverlay && !overlaySchedule && overlayName && (
+        <p className="iphone-overlay-hint">{overlayName} 탭에서 먼저 근무표를 업로드해 주세요.</p>
+      )}
 
       {!boardingMode && (
         <div className="iphone-toolbar iphone-toolbar-compact iphone-toolbar-ops-edit">
           <div className="iphone-toolbar-btns iphone-toolbar-btns-inline">
             <button type="button" className="btn btn-sm btn-danger" onClick={onDelete} disabled={isLocked}>삭제</button>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomOut} disabled={zoom <= ZOOM_MIN}>−</button>
-            <span className="iphone-zoom-label">{Math.round(zoom * 100)}%</span>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomIn} disabled={zoom >= ZOOM_MAX}>+</button>
             <button type="button" className="btn btn-sm btn-primary" onClick={() => {
               if (isLocked) return;
               const now = new Date();
@@ -295,9 +298,6 @@ export default function ScheduleView({
         <div className="iphone-toolbar iphone-toolbar-compact">
           <div className="iphone-toolbar-btns">
             <button type="button" className="btn btn-sm btn-danger" onClick={onDelete} disabled={isLocked}>삭제</button>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomOut} disabled={zoom <= ZOOM_MIN}>−</button>
-            <span className="iphone-zoom-label">{Math.round(zoom * 100)}%</span>
-            <button type="button" className="btn btn-sm btn-secondary" onClick={zoomIn} disabled={zoom >= ZOOM_MAX}>+</button>
           </div>
         </div>
       )}

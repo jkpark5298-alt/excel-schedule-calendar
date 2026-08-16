@@ -10,6 +10,7 @@ import DualPrintView from "./DualPrintView";
 import DualWallpaperView from "./DualWallpaperView";
 import LeaderDateBar from "./LeaderDateBar";
 import type { PdfExportActions } from "./MonthNavigator";
+import type { ToolPanel } from "./IphoneToolTabs";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 import { exportElementAsPdf } from "@/lib/exportPdf";
 import { exportElementAsWallpaper } from "@/lib/exportWallpaper";
@@ -35,6 +36,7 @@ interface Props {
   onBoardingScheduleUpdate: (schedule: ParsedSchedule) => void;
   onBackup?: () => void;
   onPdfExportReady?: (actions: PdfExportActions | null) => void;
+  toolPanel?: ToolPanel;
 }
 
 export default function DualScheduleView({
@@ -50,6 +52,7 @@ export default function DualScheduleView({
   onBoardingScheduleUpdate,
   onBackup,
   onPdfExportReady,
+  toolPanel = null,
 }: Props) {
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [selected, setSelected] = useState<MergedSelectedDay | null>(null);
@@ -180,6 +183,10 @@ export default function DualScheduleView({
     setLeaderPickMode(false);
   }, [year, month, opsTarget, opsSchedule?.targetName]);
 
+  useEffect(() => {
+    if (toolPanel !== "leader") setLeaderPickMode(false);
+  }, [toolPanel]);
+
   const handleApplyLeaderDate = useCallback(() => {
     if (!opsSchedule || opsLocked) return;
     const dates = parseLeaderDateInput(leaderDateInput);
@@ -213,12 +220,8 @@ export default function DualScheduleView({
 
   return (
     <div className={`iphone-schedule-body merged-schedule-body ${selected ? "with-panel" : ""}`}>
-      <div className="iphone-saved-badge">
-        <span className="iphone-saved-dot" />
-        {year}년 {month}월 · {opsTarget} + {boardingTarget} 합쳐 보기 · 날짜 선택 시 SKD 표시
-      </div>
-
-      <div className="iphone-toolbar iphone-toolbar-compact">
+      {toolPanel === "manage2" && (
+      <div className="iphone-toolbar iphone-toolbar-compact iphone-manage-panel">
         <div className="iphone-toolbar-btns">
           <button
             type="button"
@@ -277,8 +280,9 @@ export default function DualScheduleView({
           )}
         </div>
       </div>
+      )}
 
-      {opsSchedule && (
+      {opsSchedule && toolPanel === "leader" && (
         <LeaderDateBar
           value={leaderDateInput}
           pickMode={leaderPickMode}
@@ -289,6 +293,9 @@ export default function DualScheduleView({
           onApply={handleApplyLeaderDate}
           onTogglePickMode={() => setLeaderPickMode((v) => !v)}
         />
+      )}
+      {toolPanel === "leader" && !opsSchedule && (
+        <p className="iphone-tool-empty-hint">{opsTarget} 근무표를 먼저 업로드해 주세요.</p>
       )}
 
       {!hasAny ? (
