@@ -368,15 +368,15 @@ body {
 }
 
 .iphone-app.layout-phone .ios-skd-boarding-line:nth-child(2) {
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .iphone-app.layout-phone .ios-skd-pill-sub-names {
-  font-size: 9px;
+  font-size: 10px;
 }
 
 .iphone-app.layout-phone .ios-skd-line {
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.15;
 }
 
@@ -1532,11 +1532,11 @@ body {
   font-weight: inherit;
 }
 
-/* 리더 — 👍TYPE/이름 한 행·작은 글씨 */
+/* 리더·일반 공통 — 8월 30일 A/정찬호와 동일 크기 */
 .ios-skd-type-grid-sm {
-  font-size: 7px !important;
+  font-size: 10px !important;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
   line-height: 1.25;
 }
 
@@ -1547,26 +1547,26 @@ body {
 }
 
 .ios-skd-pill-leader .ios-skd-type-grid-sm {
-  font-size: 6.5px !important;
+  font-size: 10px !important;
 }
 
 .ios-skd-line-sm {
-  font-size: 7px;
+  font-size: 10px;
   font-weight: 800;
-  letter-spacing: -0.05em;
+  letter-spacing: -0.02em;
 }
 
 .ios-skd-pill-sub-names .ios-skd-type-grid {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
 }
 
 .iphone-app.layout-phone .ios-skd-type-grid-sm {
-  font-size: 6.5px;
+  font-size: 10px;
 }
 
 .iphone-app.layout-phone .ios-skd-pill-sub-names .ios-skd-type-grid {
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .ios-skd-type-own {
@@ -1603,7 +1603,7 @@ body {
 }
 
 .iphone-app.layout-phone .ios-skd-pill-sub-names .ios-skd-type-own {
-  font-size: 8px;
+  font-size: 10px;
 }
 
 .iphone-app.layout-phone .ios-day-cell:not(.boarding-skd):not(.merged-day-cell) {
@@ -1639,7 +1639,7 @@ body {
 }
 
 .ios-skd-pill-boarding {
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 800;
   text-align: center;
   white-space: normal;
@@ -1673,13 +1673,13 @@ body {
 }
 
 .ios-skd-boarding-line:first-child {
-  font-size: 11px;
-  font-weight: 900;
+  font-size: 10px;
+  font-weight: 800;
 }
 
 .ios-skd-boarding-line:nth-child(2) {
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 800;
   opacity: 0.95;
 }
 
@@ -1969,8 +1969,8 @@ body {
   }
 
   .ios-skd-pill:not(.ios-skd-pill-sub-names):not(.ios-skd-pill-boarding) { font-size: 10px; }
-  .ios-skd-pill-sub-names { font-size: 9px; }
-  .ios-skd-pill-boarding { font-size: 9px; }
+  .ios-skd-pill-sub-names { font-size: 10px; }
+  .ios-skd-pill-boarding { font-size: 10px; }
 }
 
 /* ── 대상자 탭 (박종규 / 김현숙) ── */
@@ -2267,7 +2267,7 @@ body {
   }
 
   .merged-day-cell .ios-skd-pill-boarding {
-    font-size: 8px;
+    font-size: 10px;
   }
 
   .merged-day-cell .ios-skd-pill-boarding-dual {
@@ -2275,11 +2275,11 @@ body {
   }
 
   .merged-day-cell .ios-skd-pill-boarding-dual .ios-skd-boarding-line:first-child {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .merged-day-cell .ios-skd-pill-boarding-dual .ios-skd-boarding-line:nth-child(2) {
-    font-size: 9px;
+    font-size: 10px;
   }
 }
 

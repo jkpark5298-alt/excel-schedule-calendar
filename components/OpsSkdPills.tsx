@@ -96,7 +96,6 @@ export default function OpsSkdPills({ day, hideRelated = false, compact = false 
         <TypeNamesBlock
           prefix={`${skdPillTypeLabel(day)}/`}
           names={first ? [first] : []}
-          compactFont
         />
       );
     } else if (rest || coworkers.length === 0) {
@@ -110,7 +109,6 @@ export default function OpsSkdPills({ day, hideRelated = false, compact = false 
       <TypeNamesBlock
         prefix={`${skdPillTypeLabel(day)}/`}
         names={first ? [first, ...more] : []}
-        compactFont
       />
     );
   } else if (rest || coworkers.length === 0) {
