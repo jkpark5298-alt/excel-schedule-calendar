@@ -156,12 +156,13 @@ export default function MergedMonthCalendar({
                         return;
                       }
                       onSelectCell?.({
-                      date: cell.date,
-                      dayOfWeek: cell.dayOfWeek,
-                      inMonth: cell.inMonth,
-                      opsDay: cell.opsDay,
-                      boardingDay: cell.boardingDay,
-                    })}
+                        date: cell.date,
+                        dayOfWeek: cell.dayOfWeek,
+                        inMonth: cell.inMonth,
+                        opsDay: cell.opsDay,
+                        boardingDay: cell.boardingDay,
+                      });
+                    }}
                   >
                     <span className={`ios-day-num ${cell.isToday ? "today-num" : ""} ${cell.opsDay?.isLeader ? "is-leader" : ""}`}>
                       {cell.opsDay?.isLeader ? <span className="ios-day-leader" title="리더">👍</span> : null}
