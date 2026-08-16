@@ -219,19 +219,63 @@ export function skdPillBottomLabel(day: DaySchedule): string | null {
   return lines.length ? lines.join("\n") : null;
 }
 
-/** 리더 날짜 입력 파싱 — 예: "1,3,5" */
+/** 일자 숫자 비교용 — JSON/입력에서 문자열이어도 맞춤 */
+export function dayDateNum(day: Pick<DaySchedule, "date">): number {
+  const d = Number(day.date);
+  return Number.isInteger(d) ? d : NaN;
+}
+
+export function formatLeaderDateInput(days: DaySchedule[]): string {
+  return days
+    .filter((d) => d.isLeader)
+    .map((d) => dayDateNum(d))
+    .filter((d) => d >= 1 && d <= 31)
+    .sort((a, b) => a - b)
+    .join(",");
+}
+
+/** 리더 날짜 입력 파싱 — 예: "1,3,5" / "1일 3일" */
 export function parseLeaderDateInput(input: string): number[] {
   const seen = new Set<number>();
   const result: number[] = [];
-  for (const part of input.split(/[,，、/\s]+/)) {
-    const t = part.trim();
+  for (const part of input.split(/[,，、/.·\s]+/)) {
+    const t = part.trim().replace(/일/g, "");
     if (!t) continue;
     const d = Number(t);
-    if (!Number.isFinite(d) || d < 1 || d > 31 || seen.has(d)) continue;
+    if (!Number.isInteger(d) || d < 1 || d > 31 || seen.has(d)) continue;
     seen.add(d);
     result.push(d);
   }
   return result.sort((a, b) => a - b);
+}
+
+/** 입력한 날짜만 리더로 지정. 일정이 있는 날짜는 적용, 없는 날짜는 missing으로 반환 */
+export function applyLeaderDates(
+  days: DaySchedule[],
+  dates: number[],
+): { nextDays: DaySchedule[]; applied: number[]; missing: number[] } {
+  const byDate = new Map<number, DaySchedule>();
+  for (const day of days) {
+    const d = dayDateNum(day);
+    if (!Number.isInteger(d) || byDate.has(d)) continue;
+    byDate.set(d, day);
+  }
+
+  const applied: number[] = [];
+  const missing: number[] = [];
+  for (const date of dates) {
+    if (byDate.has(date)) applied.push(date);
+    else missing.push(date);
+  }
+
+  const leaderIndexes = new Set(
+    applied.map((date) => byDate.get(date)!.orderIndex),
+  );
+  const nextDays = days.map((day) => ({
+    ...day,
+    isLeader: leaderIndexes.has(day.orderIndex),
+  }));
+  return { nextDays, applied, missing };
 }
 
 /** @deprecated use skdPillBottomLabel */

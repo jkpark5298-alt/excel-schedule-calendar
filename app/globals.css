@@ -590,20 +590,33 @@ body {
 
 .iphone-toolbar-ops-edit {
   margin-bottom: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.iphone-leader-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
 }
 
 .iphone-toolbar-ops-edit .iphone-leader-label {
   margin: 0;
   white-space: nowrap;
-  font-size: 11px;
+  font-size: 12px;
+  flex-shrink: 0;
 }
 
 .iphone-toolbar-ops-edit .iphone-leader-input {
-  width: 56px;
-  min-width: 48px;
+  flex: 1 1 auto;
+  width: auto;
+  min-width: 96px;
   margin: 0;
-  padding: 4px 6px;
-  font-size: 12px;
+  padding: 6px 8px;
+  font-size: 13px;
 }
 
 .iphone-leader-label {
@@ -1007,8 +1020,8 @@ body {
   .week-row { gap: 3px; margin-bottom: 3px; }
   .iphone-schedule-body { padding: 8px 6px; }
   .iphone-toolbar-compact { flex-direction: column; align-items: stretch; }
-  .iphone-toolbar-ops-edit { flex-direction: row; align-items: center; }
-  .iphone-toolbar-ops-edit .iphone-toolbar-btns-inline { flex-wrap: nowrap; }
+  .iphone-toolbar-ops-edit { flex-direction: column; align-items: stretch; }
+  .iphone-toolbar-ops-edit .iphone-toolbar-btns-inline { flex-wrap: wrap; }
   .iphone-stats { justify-content: center; gap: 8px; font-size: 12px; }
   .iphone-toolbar-btns { justify-content: center; }
 }
@@ -1279,10 +1292,14 @@ body {
   position: relative;
 }
 
-.ios-day-cell.today { background: #fffbf0; }
+.ios-day-cell.is-leader:not(.selected) {
+  box-shadow: inset 0 0 0 1.5px #e8b923;
+}
 
 .ios-day-num {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 1px;
   font-size: 11px;
   font-weight: 600;
   color: #000;
@@ -1292,7 +1309,31 @@ body {
   line-height: 1.2;
   flex-shrink: 0;
 }
+
+.ios-day-leader {
+  font-size: 9px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.ios-day-num.is-leader {
+  color: #8a6d00;
+}
+
+.ios-day-cell.today { background: #fffbf0; }
+
 .ios-day-num.today-num {
+  color: inherit;
+  background: transparent;
+  border-radius: 0;
+  width: auto;
+  height: auto;
+  display: flex;
+  margin: 0;
+  font-size: 11px;
+}
+
+.ios-day-num.today-num .ios-day-num-text {
   color: #fff;
   background: #ff3b30;
   border-radius: 50%;
@@ -1301,8 +1342,6 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-left: 0;
-  margin-right: auto;
   font-size: 10px;
 }
 

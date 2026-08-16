@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DaySchedule, ParsedSchedule } from "@/types/schedule";
-import { BOARDING_SHIFT_OPTIONS } from "@/lib/shiftDisplay";
+import { BOARDING_SHIFT_OPTIONS, applyLeaderDates, formatLeaderDateInput, parseLeaderDateInput } from "@/lib/shiftDisplay";
 import MergedMonthCalendar from "./MergedMonthCalendar";
 import MergedDaySkdPanel from "./MergedDaySkdPanel";
 import EditDayModal from "./EditDayModal";
@@ -55,6 +55,7 @@ export default function DualScheduleView({
   const [editState, setEditState] = useState<{ target: "ops" | "boarding"; day: DaySchedule } | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [isWallpaper, setIsWallpaper] = useState(false);
+  const [leaderDateInput, setLeaderDateInput] = useState("");
   const printRef = useRef<HTMLDivElement>(null);
   const wallpaperRef = useRef<HTMLDivElement>(null);
 
@@ -172,6 +173,29 @@ export default function DualScheduleView({
     setEditState(null);
   }, [editState, opsDays, boardingDays, persistOps, persistBoarding]);
 
+  useEffect(() => {
+    setLeaderDateInput(formatLeaderDateInput(opsDays));
+  }, [year, month, opsTarget, opsSchedule?.targetName]);
+
+  const handleApplyLeaderDate = useCallback(() => {
+    if (!opsSchedule || opsLocked) return;
+    const dates = parseLeaderDateInput(leaderDateInput);
+    if (dates.length === 0) {
+      alert("1~31 사이 날짜를 쉼표로 입력해 주세요. (예: 1,3,5)");
+      return;
+    }
+    const { nextDays, applied, missing } = applyLeaderDates(opsDays, dates);
+    if (applied.length === 0) {
+      alert(`${missing.join(", ")}일 ${opsTarget} 일정이 없습니다. 박종규 탭에서 먼저 업로드해 주세요.`);
+      return;
+    }
+    persistOps(nextDays);
+    setLeaderDateInput(applied.join(","));
+    if (missing.length > 0) {
+      alert(`${applied.join(", ")}일 리더 지정됨. ${missing.join(", ")}일은 일정이 없어 건너뛰었습니다.`);
+    }
+  }, [opsSchedule, opsLocked, leaderDateInput, opsDays, opsTarget, persistOps]);
+
   return (
     <div className={`iphone-schedule-body merged-schedule-body ${selected ? "with-panel" : ""}`}>
       <div className="iphone-saved-badge">
@@ -238,6 +262,30 @@ export default function DualScheduleView({
           )}
         </div>
       </div>
+
+      {opsSchedule && (
+        <div className="iphone-toolbar iphone-toolbar-compact iphone-toolbar-ops-edit">
+          <div className="iphone-leader-row">
+            <label htmlFor="dual-ops-leader-dates" className="iphone-leader-label">{opsTarget} 리더 날짜</label>
+            <input
+              id="dual-ops-leader-dates"
+              type="text"
+              className="iphone-leader-input"
+              placeholder="1,3,5"
+              value={leaderDateInput}
+              disabled={opsLocked}
+              onChange={(e) => setLeaderDateInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleApplyLeaderDate();
+                }
+              }}
+            />
+            <button type="button" className="btn btn-sm btn-secondary" onClick={handleApplyLeaderDate} disabled={opsLocked}>👍 지정</button>
+          </div>
+        </div>
+      )}
 
       {!hasAny ? (
         <div className="dual-calendar-empty dual-calendar-empty-main">

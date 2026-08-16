@@ -95,6 +95,7 @@ export default function IosMonthCalendar({
                       cell.isToday ? "today" : "",
                       sel ? "selected" : "",
                       hasSkd ? "has-skd" : "",
+                      schedule?.isLeader ? "is-leader" : "",
                       boarding ? "boarding-skd" : "",
                       cell.inMonth && !hasSkd ? "empty-day" : "",
                     ].filter(Boolean).join(" ")}
@@ -104,8 +105,9 @@ export default function IosMonthCalendar({
                     }}
                     disabled={!clickable}
                   >
-                    <span className={`ios-day-num ${cell.isToday ? "today-num" : ""}`}>
-                      {cell.date}
+                    <span className={`ios-day-num ${cell.isToday ? "today-num" : ""} ${schedule?.isLeader ? "is-leader" : ""}`}>
+                      {schedule?.isLeader ? <span className="ios-day-leader" title="리더">👍</span> : null}
+                      <span className="ios-day-num-text">{cell.date}</span>
                     </span>
                     <div className={`ios-day-events ${boarding ? "ios-day-events-boarding" : "ios-day-events-ops"}`}>
                       {!boarding ? (

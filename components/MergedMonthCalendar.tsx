@@ -141,6 +141,7 @@ export default function MergedMonthCalendar({
                       cell.isToday ? "today" : "",
                       sel ? "selected" : "",
                       hasSkd ? "has-skd" : "",
+                      cell.opsDay?.isLeader ? "is-leader" : "",
                       cell.inMonth && !hasSkd ? "empty-day" : "",
                     ].filter(Boolean).join(" ")}
                     disabled={!clickable}
@@ -152,8 +153,9 @@ export default function MergedMonthCalendar({
                       boardingDay: cell.boardingDay,
                     })}
                   >
-                    <span className={`ios-day-num ${cell.isToday ? "today-num" : ""}`}>
-                      {cell.date}
+                    <span className={`ios-day-num ${cell.isToday ? "today-num" : ""} ${cell.opsDay?.isLeader ? "is-leader" : ""}`}>
+                      {cell.opsDay?.isLeader ? <span className="ios-day-leader" title="리더">👍</span> : null}
+                      <span className="ios-day-num-text">{cell.date}</span>
                     </span>
 
                     <div className={`ios-day-events merged-day-events ${layoutClass}`}>

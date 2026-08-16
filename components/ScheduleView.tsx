@@ -3,7 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ParsedSchedule, DaySchedule } from "@/types/schedule";
 import { DOW_KO } from "@/lib/monthGrid";
-import { isBoardingSchedule, parseLeaderDateInput } from "@/lib/shiftDisplay";
+import { BOARDING_TARGET, applyLeaderDates, formatLeaderDateInput, parseLeaderDateInput } from "@/lib/shiftDisplay";
 import IosMonthCalendar from "./IosMonthCalendar";
 import EditDayModal from "./EditDayModal";
 import DaySkdPanel from "./DaySkdPanel";
@@ -51,6 +51,10 @@ export default function ScheduleView({
     setSelectedDay(null);
   }, [schedule]);
 
+  useEffect(() => {
+    setLeaderDateInput(formatLeaderDateInput(schedule.days));
+  }, [schedule.year, schedule.month, schedule.targetName]);
+
   const persist = useCallback((nextDays: DaySchedule[]) => {
     const sorted = [...nextDays].sort((a, b) => a.orderIndex - b.orderIndex);
     setDays(sorted);
@@ -92,23 +96,19 @@ export default function ScheduleView({
       alert("1~31 사이 날짜를 쉼표로 입력해 주세요. (예: 1,3,5)");
       return;
     }
-    const missing = dates.filter((d) => !days.some((day) => day.date === d));
-    if (missing.length > 0) {
+    const { nextDays, applied, missing } = applyLeaderDates(days, dates);
+    if (applied.length === 0) {
       alert(`${missing.join(", ")}일 일정이 없습니다. 먼저 일정을 추가하거나 업로드해 주세요.`);
       return;
     }
-    const leaderIndexes = new Set(
-      dates.map((d) => days.find((day) => day.date === d)!.orderIndex),
-    );
-    const nextDays = days.map((day) => ({
-      ...day,
-      isLeader: leaderIndexes.has(day.orderIndex),
-    }));
     persist(nextDays);
-    setLeaderDateInput("");
-    const lastDate = dates[dates.length - 1];
-    const lastTarget = nextDays.find((day) => day.date === lastDate);
+    setLeaderDateInput(applied.join(","));
+    const lastDate = applied[applied.length - 1];
+    const lastTarget = nextDays.find((day) => Number(day.date) === lastDate);
     if (lastTarget) setSelectedDay(lastTarget);
+    if (missing.length > 0) {
+      alert(`${applied.join(", ")}일 리더 지정됨. ${missing.join(", ")}일은 일정이 없어 건너뛰었습니다.`);
+    }
   }, [days, leaderDateInput, persist]);
 
   const handlePDF = useCallback(async (mode: "download" | "share" | "auto" = "auto") => {
@@ -162,7 +162,7 @@ export default function ScheduleView({
     }
   };
 
-  const boardingMode = isBoardingSchedule(days);
+  const boardingMode = schedule.targetName === BOARDING_TARGET;
 
   const zoomOut = () => setZoom((z) => clampZoom(z - ZOOM_STEP));
   const zoomIn = () => setZoom((z) => clampZoom(z + ZOOM_STEP));
@@ -224,13 +224,23 @@ export default function ScheduleView({
               const dow = DOW_KO[new Date(schedule.year, schedule.month - 1, date).getDay()];
               setAddDay({ date, dayOfWeek: dow });
             }} disabled={isLocked}>일정 추가</button>
-            <label className="iphone-leader-label">리더 날짜</label>
+          </div>
+          <div className="iphone-leader-row">
+            <label htmlFor="ops-leader-dates" className="iphone-leader-label">리더 날짜</label>
             <input
+              id="ops-leader-dates"
               type="text"
               className="iphone-leader-input"
               placeholder="1,3,5"
               value={leaderDateInput}
+              disabled={isLocked}
               onChange={(e) => setLeaderDateInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleApplyLeaderDate();
+                }
+              }}
             />
             <button type="button" className="btn btn-sm btn-secondary" onClick={handleApplyLeaderDate} disabled={isLocked}>👍 지정</button>
           </div>
