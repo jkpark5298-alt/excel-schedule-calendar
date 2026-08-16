@@ -11,7 +11,7 @@ import {
 import { computeOpsMonthStats, formatWon } from "@/lib/opsMonthStats";
 import { usePinchZoom } from "@/lib/usePinchZoom";
 import OpsSkdPills from "./OpsSkdPills";
-import { skdPillBoardingLinesDual } from "@/lib/shiftDisplay";
+import { getDualPairLabel, skdPillBoardingLinesDual } from "@/lib/shiftDisplay";
 
 interface Props {
   year: number;
@@ -24,10 +24,16 @@ interface Props {
   onEmptyDayClick?: (date: number, dayOfWeek: string) => void;
   /** 박종규(운항) 월간 집계 표시 */
   showOpsStats?: boolean;
+  /** 날짜 탭 시 리더 지정/해제 */
+  leaderPickMode?: boolean;
+  onToggleLeader?: (day: DaySchedule) => void;
+  boardingDays?: DaySchedule[];
+  showBoardingOverlay?: boolean;
 }
 
 export default function IosMonthCalendar({
-  year, month, days, selected, zoom = 1, onZoomChange, onSelect, onEmptyDayClick, showOpsStats = false,
+  year, month, days, selected, zoom = 1, onZoomChange, onSelect,   onEmptyDayClick, showOpsStats = false, leaderPickMode = false, onToggleLeader,
+  boardingDays = [], showBoardingOverlay = false,
 }: Props) {
   const now = new Date();
   const today = { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
@@ -42,6 +48,16 @@ export default function IosMonthCalendar({
     () => (showOpsStats ? computeOpsMonthStats(days) : null),
     [showOpsStats, days],
   );
+
+  const boardingByDate = useMemo(() => {
+    const map = new Map<number, DaySchedule>();
+    if (!showBoardingOverlay) return map;
+    for (const day of boardingDays) {
+      const date = Number(day.date);
+      if (!map.has(date)) map.set(date, day);
+    }
+    return map;
+  }, [showBoardingOverlay, boardingDays]);
 
   const isSelected = (cell: { schedule: DaySchedule | null }) =>
     selected && cell.schedule && selected.orderIndex === cell.schedule.orderIndex;
@@ -82,8 +98,13 @@ export default function IosMonthCalendar({
                 const hasSkd = !!cell.schedule;
                 const sel = isSelected(cell);
                 const schedule = cell.schedule;
-                const boarding = schedule ? isBoardingDayLayout(days, schedule.myShift) : false;
-                const clickable = hasSkd || (cell.inMonth && !!onEmptyDayClick);
+                const boardingLayout = schedule ? isBoardingDayLayout(days, schedule.myShift) : false;
+                const overlayBoarding = cell.inMonth ? boardingByDate.get(cell.date) ?? null : null;
+                const pairLabel = overlayBoarding
+                  ? getDualPairLabel(schedule?.myShift, overlayBoarding.myShift)
+                  : null;
+                const withOverlay = showBoardingOverlay && cell.inMonth;
+                const clickable = hasSkd || (cell.inMonth && !!onEmptyDayClick) || (leaderPickMode && cell.inMonth && !!schedule);
 
                 return (
                   <button
@@ -96,10 +117,16 @@ export default function IosMonthCalendar({
                       sel ? "selected" : "",
                       hasSkd ? "has-skd" : "",
                       schedule?.isLeader ? "is-leader" : "",
-                      boarding ? "boarding-skd" : "",
+                      leaderPickMode && cell.inMonth ? "leader-pick" : "",
+                      boardingLayout ? "boarding-skd" : "",
+                      withOverlay ? "ops-with-boarding" : "",
                       cell.inMonth && !hasSkd ? "empty-day" : "",
                     ].filter(Boolean).join(" ")}
                     onClick={() => {
+                      if (leaderPickMode && schedule && onToggleLeader) {
+                        onToggleLeader(schedule);
+                        return;
+                      }
                       if (cell.schedule) onSelect(cell.schedule);
                       else if (cell.inMonth && onEmptyDayClick) onEmptyDayClick(cell.date, cell.dayOfWeek);
                     }}
@@ -109,9 +136,9 @@ export default function IosMonthCalendar({
                       {schedule?.isLeader ? <span className="ios-day-leader" title="리더">👍</span> : null}
                       <span className="ios-day-num-text">{cell.date}</span>
                     </span>
-                    <div className={`ios-day-events ${boarding ? "ios-day-events-boarding" : "ios-day-events-ops"}`}>
-                      {!boarding ? (
-                        schedule ? <OpsSkdPills day={schedule} compact /> : (
+                    <div className={`ios-day-events ${boardingLayout ? "ios-day-events-boarding" : "ios-day-events-ops"} ${withOverlay ? "ios-day-events-overlay" : ""}`}>
+                      {!boardingLayout ? (
+                        schedule ? <OpsSkdPills day={schedule} compact hideRelated={withOverlay} /> : (
                           <div className="ios-day-slot ios-day-slot-top ios-day-slot-auto" />
                         )
                       ) : (
@@ -127,6 +154,24 @@ export default function IosMonthCalendar({
                               ))}
                             </div>
                           )}
+                        </div>
+                      )}
+                      {withOverlay && pairLabel && (
+                        <div className="merged-pair-badge" title={pairLabel}>
+                          <span className="merged-pair-badge-text">{pairLabel}</span>
+                        </div>
+                      )}
+                      {withOverlay && overlayBoarding && (
+                        <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-boarding-stack ios-ops-boarding-overlay">
+                          <div
+                            className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ${skdPillClass(overlayBoarding.myShift)}`}
+                          >
+                            {skdPillBoardingLinesDual(overlayBoarding).map((line, i) => (
+                              <span key={`ob-${i}-${line}`} className="ios-skd-boarding-line">
+                                {line}
+                              </span>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>

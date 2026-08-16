@@ -257,6 +257,8 @@ export default function IphoneCalendarApp() {
           onBackup={handleBackup}
           onRestore={handleRestore}
           onBoardingInput={isBoardingPerson ? () => setShowBoardingInput(true) : undefined}
+          overlaySchedule={!isBoardingPerson ? boardingSchedule : null}
+          overlayName={!isBoardingPerson ? BOARDING_TARGET : undefined}
           onPdfExportReady={setPdfExport}
         />
       ) : (

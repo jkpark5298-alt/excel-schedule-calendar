@@ -310,7 +310,11 @@ body {
   height: 100%;
 }
 
-.iphone-app.layout-phone .ios-day-events-ops {
+.iphone-app.layout-phone .ios-day-cell.ops-with-boarding:not(.merged-day-cell) {
+  --ios-day-cell-h: 58px;
+}
+
+.iphone-app.layout-phone .ios-day-events-overlay {
   gap: 1px;
 }
 
@@ -595,28 +599,81 @@ body {
   gap: 6px;
 }
 
+.iphone-leader-bar {
+  position: relative;
+  z-index: 8;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 8px;
+  background: #1c1c1e;
+  border: 1px solid #334155;
+  border-radius: 10px;
+}
+
+.iphone-leader-pick-btn {
+  width: 100%;
+  justify-content: center;
+  min-height: 44px;
+  font-size: 15px;
+}
+
+.iphone-leader-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #fbbf24;
+  text-align: center;
+}
+
+.iphone-overlay-toggle {
+  width: 100%;
+  justify-content: center;
+  min-height: 40px;
+  margin-bottom: 8px;
+}
+
+.iphone-overlay-hint {
+  margin: -4px 0 10px;
+  font-size: 12px;
+  color: #94a3b8;
+  text-align: center;
+}
+
 .iphone-leader-row {
   display: flex;
   align-items: center;
   gap: 6px;
   width: 100%;
   min-width: 0;
+  pointer-events: auto;
 }
 
-.iphone-toolbar-ops-edit .iphone-leader-label {
+.iphone-toolbar-ops-edit .iphone-leader-label,
+.iphone-leader-bar .iphone-leader-label {
   margin: 0;
   white-space: nowrap;
   font-size: 12px;
   flex-shrink: 0;
 }
 
-.iphone-toolbar-ops-edit .iphone-leader-input {
+.iphone-toolbar-ops-edit .iphone-leader-input,
+.iphone-leader-bar .iphone-leader-input {
   flex: 1 1 auto;
   width: auto;
   min-width: 96px;
+  min-height: 44px;
   margin: 0;
-  padding: 6px 8px;
-  font-size: 13px;
+  padding: 10px 12px;
+  font-size: 16px;
+  pointer-events: auto;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.ios-day-cell.leader-pick {
+  box-shadow: inset 0 0 0 1.5px #e8b923;
 }
 
 .iphone-leader-label {
@@ -626,12 +683,12 @@ body {
 
 .iphone-leader-input {
   width: 88px;
-  padding: 4px 8px;
+  padding: 10px 12px;
   border-radius: 6px;
   border: 1px solid #334155;
   background: #1e293b;
   color: #fff;
-  font-size: 13px;
+  font-size: 16px;
 }
 
 .ios-month-zoom-wrap {
@@ -1782,6 +1839,26 @@ body {
   font-size: 14px;
   color: #94a3b8;
   margin: 0;
+}
+
+.day-skd-overlay-block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #2c2c2e;
+}
+
+.day-skd-overlay-title {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #34c759;
+}
+
+.day-skd-overlay-pair {
+  margin: 8px 0 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fbbf24;
 }
 
 .day-skd-panel-actions {

@@ -10,11 +10,13 @@ import DaySkdPanel from "./DaySkdPanel";
 import PrintView from "./PrintView";
 import WallpaperView from "./WallpaperView";
 import PinHelpBanner from "./PinHelpBanner";
+import LeaderDateBar from "./LeaderDateBar";
 import type { PdfExportActions } from "./MonthNavigator";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 import { exportElementAsPdf } from "@/lib/exportPdf";
 import { exportElementAsWallpaper } from "@/lib/exportWallpaper";
 import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
+import { loadShowBoardingOnOps, saveShowBoardingOnOps } from "@/lib/overlayPref";
 
 interface Props {
   schedule: ParsedSchedule;
@@ -27,11 +29,13 @@ interface Props {
   onRestore: (file: File) => void;
   onBoardingInput?: () => void;
   onPdfExportReady?: (actions: PdfExportActions | null) => void;
+  overlaySchedule?: ParsedSchedule | null;
+  overlayName?: string;
 }
 
 export default function ScheduleView({
   schedule, isLocked = false, onToggleLock, onScheduleUpdate, onDelete, onReupload, onBackup, onRestore, onBoardingInput,
-  onPdfExportReady,
+  onPdfExportReady, overlaySchedule = null, overlayName,
 }: Props) {
   const [days, setDays] = useState<DaySchedule[]>(schedule.days);
   const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
@@ -42,18 +46,28 @@ export default function ScheduleView({
   const [isWallpaper, setIsWallpaper] = useState(false);
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [leaderDateInput, setLeaderDateInput] = useState("");
+  const [leaderPickMode, setLeaderPickMode] = useState(false);
+  const [showBoardingOverlay, setShowBoardingOverlay] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const wallpaperRef = useRef<HTMLDivElement>(null);
   const restoreInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setDays(schedule.days);
-    setSelectedDay(null);
+    setSelectedDay((prev) => {
+      if (!prev) return null;
+      return schedule.days.find((d) => d.orderIndex === prev.orderIndex) ?? null;
+    });
   }, [schedule]);
 
   useEffect(() => {
     setLeaderDateInput(formatLeaderDateInput(schedule.days));
+    setLeaderPickMode(false);
   }, [schedule.year, schedule.month, schedule.targetName]);
+
+  useEffect(() => {
+    setShowBoardingOverlay(loadShowBoardingOnOps());
+  }, []);
 
   const persist = useCallback((nextDays: DaySchedule[]) => {
     const sorted = [...nextDays].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -111,6 +125,18 @@ export default function ScheduleView({
     }
   }, [days, leaderDateInput, persist]);
 
+  const handleToggleLeader = useCallback((day: DaySchedule) => {
+    if (isLocked) {
+      alert("확정된 달입니다. 확정 해제 후 리더 날짜를 지정할 수 있습니다.");
+      return;
+    }
+    const nextDays = days.map((d) =>
+      d.orderIndex === day.orderIndex ? { ...d, isLeader: !d.isLeader } : d,
+    );
+    persist(nextDays);
+    setLeaderDateInput(formatLeaderDateInput(nextDays));
+  }, [days, isLocked, persist]);
+
   const handlePDF = useCallback(async (mode: "download" | "share" | "auto" = "auto") => {
     setIsPrinting(true);
     await new Promise((r) => setTimeout(r, 100));
@@ -163,6 +189,19 @@ export default function ScheduleView({
   };
 
   const boardingMode = schedule.targetName === BOARDING_TARGET;
+  const overlayEnabled = !boardingMode && showBoardingOverlay;
+  const overlayDays = overlayEnabled ? (overlaySchedule?.days ?? []) : [];
+  const overlayDayForSelected = selectedDay && overlayDays.length
+    ? overlayDays.find((d) => Number(d.date) === Number(selectedDay.date)) ?? null
+    : null;
+
+  const toggleBoardingOverlay = () => {
+    setShowBoardingOverlay((prev) => {
+      const next = !prev;
+      saveShowBoardingOnOps(next);
+      return next;
+    });
+  };
 
   const zoomOut = () => setZoom((z) => clampZoom(z - ZOOM_STEP));
   const zoomIn = () => setZoom((z) => clampZoom(z + ZOOM_STEP));
@@ -174,6 +213,30 @@ export default function ScheduleView({
         {schedule.year}년 {schedule.month}월 {isLocked ? "확정됨" : "저장됨"} · 날짜 선택 시 SKD 표시
         <button type="button" className="iphone-saved-help" onClick={() => setShowPinHelp(true)}>고정 방법</button>
       </div>
+
+      {!boardingMode && (
+        <LeaderDateBar
+          value={leaderDateInput}
+          pickMode={leaderPickMode}
+          locked={isLocked}
+          onChange={setLeaderDateInput}
+          onApply={handleApplyLeaderDate}
+          onTogglePickMode={() => setLeaderPickMode((v) => !v)}
+        />
+      )}
+
+      {!boardingMode && overlayName && (
+        <button
+          type="button"
+          className={`btn btn-sm iphone-overlay-toggle ${showBoardingOverlay ? "btn-primary" : "btn-secondary"}`}
+          onClick={toggleBoardingOverlay}
+        >
+          {showBoardingOverlay ? `${overlayName} 같이 보기 켜짐` : `${overlayName} 같이 보기`}
+        </button>
+      )}
+      {!boardingMode && showBoardingOverlay && !overlaySchedule && overlayName && (
+        <p className="iphone-overlay-hint">{overlayName} 탭에서 먼저 근무표를 업로드해 주세요.</p>
+      )}
 
       <div className="iphone-toolbar iphone-toolbar-compact">
         <div className="iphone-toolbar-btns">
@@ -225,25 +288,6 @@ export default function ScheduleView({
               setAddDay({ date, dayOfWeek: dow });
             }} disabled={isLocked}>일정 추가</button>
           </div>
-          <div className="iphone-leader-row">
-            <label htmlFor="ops-leader-dates" className="iphone-leader-label">리더 날짜</label>
-            <input
-              id="ops-leader-dates"
-              type="text"
-              className="iphone-leader-input"
-              placeholder="1,3,5"
-              value={leaderDateInput}
-              disabled={isLocked}
-              onChange={(e) => setLeaderDateInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleApplyLeaderDate();
-                }
-              }}
-            />
-            <button type="button" className="btn btn-sm btn-secondary" onClick={handleApplyLeaderDate} disabled={isLocked}>👍 지정</button>
-          </div>
         </div>
       )}
 
@@ -268,6 +312,10 @@ export default function ScheduleView({
         onSelect={(day) => handleSelect(day)}
         onEmptyDayClick={handleEmptyDayClick}
         showOpsStats={!boardingMode}
+        leaderPickMode={!boardingMode && leaderPickMode}
+        onToggleLeader={!boardingMode ? handleToggleLeader : undefined}
+        boardingDays={overlayDays}
+        showBoardingOverlay={overlayEnabled && overlayDays.length > 0}
       />
 
       {selectedDay && !editDay && (
@@ -277,6 +325,8 @@ export default function ScheduleView({
           month={schedule.month}
           boardingMode={boardingMode}
           allDays={days}
+          overlayBoardingDay={overlayDayForSelected}
+          overlayBoardingName={overlayEnabled ? overlayName : undefined}
           onEdit={() => { if (!isLocked) setEditDay(selectedDay); }}
           onDelete={() => { if (!isLocked) handleDeleteDay(selectedDay.orderIndex); }}
           onClose={() => setSelectedDay(null)}

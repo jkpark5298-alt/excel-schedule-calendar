@@ -20,6 +20,8 @@ interface Props {
   zoom?: number;
   onZoomChange?: (zoom: number) => void;
   selectedDate?: number | null;
+  leaderPickMode?: boolean;
+  onToggleOpsLeader?: (day: DaySchedule) => void;
   onSelectCell?: (cell: {
     date: number;
     dayOfWeek: string;
@@ -77,6 +79,8 @@ export default function MergedMonthCalendar({
   zoom = 1,
   onZoomChange,
   selectedDate = null,
+  leaderPickMode = false,
+  onToggleOpsLeader,
   onSelectCell,
 }: Props) {
   const now = new Date();
@@ -142,10 +146,16 @@ export default function MergedMonthCalendar({
                       sel ? "selected" : "",
                       hasSkd ? "has-skd" : "",
                       cell.opsDay?.isLeader ? "is-leader" : "",
+                      leaderPickMode && cell.inMonth && cell.opsDay ? "leader-pick" : "",
                       cell.inMonth && !hasSkd ? "empty-day" : "",
                     ].filter(Boolean).join(" ")}
                     disabled={!clickable}
-                    onClick={() => onSelectCell?.({
+                    onClick={() => {
+                      if (leaderPickMode && cell.opsDay && onToggleOpsLeader) {
+                        onToggleOpsLeader(cell.opsDay);
+                        return;
+                      }
+                      onSelectCell?.({
                       date: cell.date,
                       dayOfWeek: cell.dayOfWeek,
                       inMonth: cell.inMonth,

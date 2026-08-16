@@ -5,6 +5,7 @@ import ShiftBadge from "./ShiftBadge";
 import {
   isBoardingDayLayout,
   isRestShift,
+  getDualPairLabel,
   skdPillBottomLines,
   skdPillBoardingLines,
   skdPillTopLines,
@@ -17,18 +18,25 @@ interface Props {
   month: number;
   boardingMode?: boolean;
   allDays?: DaySchedule[];
+  overlayBoardingDay?: DaySchedule | null;
+  overlayBoardingName?: string;
   onEdit: () => void;
   onDelete: () => void;
   onClose: () => void;
 }
 
 export default function DaySkdPanel({
-  day, year, month, boardingMode = false, allDays = [], onEdit, onDelete, onClose,
+  day, year, month, boardingMode = false, allDays = [], overlayBoardingDay = null, overlayBoardingName,
+  onEdit, onDelete, onClose,
 }: Props) {
   const isRest = isRestShift(day.myShift);
   const boarding = boardingMode && isBoardingDayLayout(allDays.length ? allDays : [day], day.myShift);
   const topLines = boarding ? skdPillBoardingLines(day) : skdPillTopLines(day);
   const bottomLines = !boarding ? skdPillBottomLines(day) : [];
+  const pairLabel = overlayBoardingDay
+    ? getDualPairLabel(day.myShift, overlayBoardingDay.myShift)
+    : null;
+  const overlayLines = overlayBoardingDay ? skdPillBoardingLines(overlayBoardingDay) : [];
 
   return (
     <div className="day-skd-panel safe-bottom">
@@ -76,6 +84,29 @@ export default function DaySkdPanel({
 
         {isRest && !boarding && (
           <p className="day-skd-rest-note">휴무일입니다.</p>
+        )}
+
+        {overlayBoardingName && (
+          <div className="day-skd-overlay-block">
+            <p className="day-skd-overlay-title">{overlayBoardingName}</p>
+            {overlayBoardingDay ? (
+              <>
+                <div className="day-skd-main">
+                  <ShiftBadge shift={overlayBoardingDay.myShift} size="md" />
+                  <div className="day-skd-display-stack">
+                    {overlayLines.map((line, i) => (
+                      <span key={`ob-${i}`} className="day-skd-display-label">
+                        {line}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                {pairLabel && <p className="day-skd-overlay-pair">{pairLabel}</p>}
+              </>
+            ) : (
+              <p className="day-skd-rest-note">일정 없음</p>
+            )}
+          </div>
         )}
       </div>
 

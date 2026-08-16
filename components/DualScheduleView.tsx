@@ -8,6 +8,7 @@ import MergedDaySkdPanel from "./MergedDaySkdPanel";
 import EditDayModal from "./EditDayModal";
 import DualPrintView from "./DualPrintView";
 import DualWallpaperView from "./DualWallpaperView";
+import LeaderDateBar from "./LeaderDateBar";
 import type { PdfExportActions } from "./MonthNavigator";
 import { downloadMonthIcs } from "@/lib/exportGoogleIcs";
 import { exportElementAsPdf } from "@/lib/exportPdf";
@@ -56,6 +57,7 @@ export default function DualScheduleView({
   const [isPrinting, setIsPrinting] = useState(false);
   const [isWallpaper, setIsWallpaper] = useState(false);
   const [leaderDateInput, setLeaderDateInput] = useState("");
+  const [leaderPickMode, setLeaderPickMode] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const wallpaperRef = useRef<HTMLDivElement>(null);
 
@@ -175,6 +177,7 @@ export default function DualScheduleView({
 
   useEffect(() => {
     setLeaderDateInput(formatLeaderDateInput(opsDays));
+    setLeaderPickMode(false);
   }, [year, month, opsTarget, opsSchedule?.targetName]);
 
   const handleApplyLeaderDate = useCallback(() => {
@@ -195,6 +198,18 @@ export default function DualScheduleView({
       alert(`${applied.join(", ")}일 리더 지정됨. ${missing.join(", ")}일은 일정이 없어 건너뛰었습니다.`);
     }
   }, [opsSchedule, opsLocked, leaderDateInput, opsDays, opsTarget, persistOps]);
+
+  const handleToggleOpsLeader = useCallback((day: DaySchedule) => {
+    if (opsLocked) {
+      alert("확정된 달입니다. 확정 해제 후 리더 날짜를 지정할 수 있습니다.");
+      return;
+    }
+    const nextDays = opsDays.map((d) =>
+      d.orderIndex === day.orderIndex ? { ...d, isLeader: !d.isLeader } : d,
+    );
+    persistOps(nextDays);
+    setLeaderDateInput(formatLeaderDateInput(nextDays));
+  }, [opsLocked, opsDays, persistOps]);
 
   return (
     <div className={`iphone-schedule-body merged-schedule-body ${selected ? "with-panel" : ""}`}>
@@ -264,27 +279,16 @@ export default function DualScheduleView({
       </div>
 
       {opsSchedule && (
-        <div className="iphone-toolbar iphone-toolbar-compact iphone-toolbar-ops-edit">
-          <div className="iphone-leader-row">
-            <label htmlFor="dual-ops-leader-dates" className="iphone-leader-label">{opsTarget} 리더 날짜</label>
-            <input
-              id="dual-ops-leader-dates"
-              type="text"
-              className="iphone-leader-input"
-              placeholder="1,3,5"
-              value={leaderDateInput}
-              disabled={opsLocked}
-              onChange={(e) => setLeaderDateInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleApplyLeaderDate();
-                }
-              }}
-            />
-            <button type="button" className="btn btn-sm btn-secondary" onClick={handleApplyLeaderDate} disabled={opsLocked}>👍 지정</button>
-          </div>
-        </div>
+        <LeaderDateBar
+          value={leaderDateInput}
+          pickMode={leaderPickMode}
+          locked={opsLocked}
+          label={`${opsTarget} 리더`}
+          inputId="dual-ops-leader-dates"
+          onChange={setLeaderDateInput}
+          onApply={handleApplyLeaderDate}
+          onTogglePickMode={() => setLeaderPickMode((v) => !v)}
+        />
       )}
 
       {!hasAny ? (
@@ -303,6 +307,8 @@ export default function DualScheduleView({
           zoom={zoom}
           onZoomChange={setZoom}
           selectedDate={selected?.date ?? null}
+          leaderPickMode={leaderPickMode}
+          onToggleOpsLeader={handleToggleOpsLeader}
           onSelectCell={(cell) => {
             if (!cell.inMonth || (!cell.opsDay && !cell.boardingDay)) return;
             setSelected({
