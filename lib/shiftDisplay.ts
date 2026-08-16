@@ -150,12 +150,12 @@ export function skdPillBoardingLinesDual(day: DaySchedule): string[] {
   return [`${leader}${code}`, `${fmt(m[1], m[2])}~${fmt(m[3], m[4])}`];
 }
 
-/** 함께 보기 운항 — 김현숙과 동일 2줄 (TYPE / 동료 1명). 리더 👍는 날짜 옆에만 */
+/** 함께 보기 운항 — 박종규와 동일하게 TYPE/이름 한 줄. 리더 👍는 날짜 옆에만 */
 export function skdPillOpsLinesDual(day: DaySchedule): string[] {
   const type = formatShiftDisplay(day.myShift);
   if (isRestShift(day.myShift)) return [type];
   const name = (day.sameShiftCoworkers ?? [])[0];
-  return name ? [type, name] : [type];
+  return name ? [`${type}/${name}`] : [type];
 }
 
 /** 상단 첫째 칸 — TYPE만 (C / 당 …). 리더 👍는 날짜 옆에만 */

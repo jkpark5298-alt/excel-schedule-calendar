@@ -1614,6 +1614,15 @@ body {
   overflow: visible;
 }
 
+.ios-day-events-ops .ios-skd-pill.skd-pill-rest {
+  text-align: center;
+}
+
+.ios-day-events-ops .ios-day-slot:has(.skd-pill-rest) {
+  align-items: center;
+  justify-content: center;
+}
+
 .ios-day-events-boarding .ios-day-slot-bottom {
   margin-top: 0;
   flex: 1 1 auto;

@@ -161,11 +161,8 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
                       {cell.opsDay.isLeader ? "👍" : ""}
                       {formatShiftDisplay(cell.opsDay.myShift)}
                       {!isRestShift(cell.opsDay.myShift) &&
-                        cell.opsDay.sameShiftCoworkers.length > 0 && (
-                          <span style={{ display: "block" }}>
-                            {cell.opsDay.sameShiftCoworkers.join(", ")}
-                          </span>
-                        )}
+                        cell.opsDay.sameShiftCoworkers.length > 0 &&
+                        `/${cell.opsDay.sameShiftCoworkers[0]}`}
                     </>
                   ) : (
                     <span style={{ color: "#94a3b8" }}>—</span>

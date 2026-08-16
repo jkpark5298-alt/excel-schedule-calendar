@@ -45,7 +45,7 @@ function BoardingPill({ day }: { day: DaySchedule }) {
   );
 }
 
-/** 합쳐보기 운항 — 김현숙과 동일 2줄 형식 (TYPE / 동료) */
+/** 합쳐보기 운항 — TYPE/동료 한 줄 (예: C/변철웅) */
 function OpsPillDual({ day }: { day: DaySchedule }) {
   const lines = skdPillOpsLinesDual(day);
   return (
