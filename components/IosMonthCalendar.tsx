@@ -138,7 +138,7 @@ export default function IosMonthCalendar({
                     </span>
                     <div className={`ios-day-events ${boardingLayout ? "ios-day-events-boarding" : "ios-day-events-ops"} ${withOverlay ? "ios-day-events-overlay" : ""}`}>
                       {!boardingLayout ? (
-                        schedule ? <OpsSkdPills day={schedule} compact hideRelated={withOverlay} /> : (
+                        schedule ? <OpsSkdPills day={schedule} compact /> : (
                           <div className="ios-day-slot ios-day-slot-top ios-day-slot-auto" />
                         )
                       ) : (

@@ -311,7 +311,11 @@ body {
 }
 
 .iphone-app.layout-phone .ios-day-cell.ops-with-boarding:not(.merged-day-cell) {
-  --ios-day-cell-h: 58px;
+  --ios-day-cell-h: 86px;
+  height: auto;
+  min-height: var(--ios-day-cell-h);
+  max-height: none;
+  overflow: visible;
 }
 
 .iphone-app.layout-phone .ios-day-events-overlay {
