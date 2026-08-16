@@ -150,19 +150,17 @@ export function skdPillBoardingLinesDual(day: DaySchedule): string[] {
   return [`${leader}${code}`, `${fmt(m[1], m[2])}~${fmt(m[3], m[4])}`];
 }
 
-/** 함께 보기 운항 — 김현숙과 동일 2줄 (TYPE / 동료 1명) */
+/** 함께 보기 운항 — 김현숙과 동일 2줄 (TYPE / 동료 1명). 리더 👍는 날짜 옆에만 */
 export function skdPillOpsLinesDual(day: DaySchedule): string[] {
-  const leader = day.isLeader ? "👍" : "";
-  const type = `${leader}${formatShiftDisplay(day.myShift)}`;
+  const type = formatShiftDisplay(day.myShift);
   if (isRestShift(day.myShift)) return [type];
   const name = (day.sameShiftCoworkers ?? [])[0];
   return name ? [type, name] : [type];
 }
 
-/** 상단 첫째 칸 — TYPE만 (👍C / 당 …) */
+/** 상단 첫째 칸 — TYPE만 (C / 당 …). 리더 👍는 날짜 옆에만 */
 export function skdPillTypeLabel(day: DaySchedule): string {
-  const leader = day.isLeader ? "👍" : "";
-  return `${leader}${formatShiftDisplay(day.myShift)}`;
+  return formatShiftDisplay(day.myShift);
 }
 
 /** 상단 다음 칸들 — 같은 근무 이름 (한 칸에 1명) */
@@ -173,8 +171,7 @@ export function skdPillCoworkerLines(day: DaySchedule): string[] {
 
 /**
  * 상단 표시용 줄 (패널/인쇄 호환 문자열)
- * - 리더: 👍TYPE/이름1 + 추가 이름
- * - 비리더: TYPE/이름1 + 추가 이름
+ * - 리더/비리더 공통: TYPE/이름1 + 추가 이름 (👍는 날짜 옆)
  */
 export function skdPillTopLines(day: DaySchedule): string[] {
   const display = formatShiftDisplay(day.myShift);

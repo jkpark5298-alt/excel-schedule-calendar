@@ -79,7 +79,7 @@ function TypeNamesBlock({
 
 /** 운항 셀 표기
  * 비리더: A/강정형 → 추가 이름 아래 열맞춤
- * 리더: 👍C/이영식 한 줄(작게) → 추가 동료 열맞춤
+ * 리더: C/이영식 (👍는 날짜 옆) → 추가 동료 열맞춤
  * 검정: C 김우석 → 아래 이름 열맞춤
  */
 export default function OpsSkdPills({ day, hideRelated = false, compact = false }: Props) {
