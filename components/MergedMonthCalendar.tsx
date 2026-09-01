@@ -61,7 +61,10 @@ function OpsPillDual({ day }: { day: DaySchedule }) {
   );
 }
 
-function DualPairBadge({ label }: { label: string }) {
+function DualPairBadge({ label }: { label: string | null }) {
+  if (!label) {
+    return <div className="merged-pair-slot" aria-hidden="true" />;
+  }
   return (
     <div className="merged-pair-badge" title={label}>
       <span className="merged-pair-badge-text">{label}</span>
@@ -128,12 +131,7 @@ export default function MergedMonthCalendar({
                 const pairLabel = cell.inMonth
                   ? getDualPairLabel(cell.opsDay?.myShift, cell.boardingDay?.myShift)
                   : null;
-                const bothSchedules = !!(cell.opsDay && cell.boardingDay);
-                const layoutClass = pairLabel
-                  ? "has-pair"
-                  : bothSchedules
-                    ? "half-split"
-                    : "single-side";
+                const layoutClass = cell.inMonth ? "has-pair" : "single-side";
 
                 return (
                   <button
@@ -178,7 +176,7 @@ export default function MergedMonthCalendar({
                         ) : null}
                       </div>
 
-                      {pairLabel ? <DualPairBadge label={pairLabel} /> : null}
+                      {cell.inMonth ? <DualPairBadge label={pairLabel} /> : null}
 
                       <div className="merged-boarding-block">
                         {cell.boardingDay ? (

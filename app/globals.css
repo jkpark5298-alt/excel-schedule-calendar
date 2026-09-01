@@ -389,6 +389,11 @@ body {
   padding: 0 2px;
 }
 
+.iphone-app.layout-phone .merged-pair-slot {
+  min-height: 14px;
+  padding: 0 2px;
+}
+
 .iphone-app.layout-phone .merged-pair-badge-text {
   font-size: 8px;
 }
@@ -458,6 +463,24 @@ body {
 .iphone-app.layout-pc .merged-day-events,
 .iphone-app.layout-pc .merged-ops-block {
   overflow: visible;
+}
+
+.iphone-app.layout-pc .merged-day-events.has-pair {
+  gap: 10px;
+}
+
+.iphone-app.layout-pc .merged-pair-badge {
+  min-height: 22px;
+  padding: 4px 6px;
+}
+
+.iphone-app.layout-pc .merged-pair-slot {
+  min-height: 22px;
+  padding: 4px 6px;
+}
+
+.iphone-app.layout-pc .merged-pair-badge-text {
+  font-size: 11px;
 }
 
 .iphone-app.layout-pc .ios-dow {
@@ -2078,7 +2101,8 @@ body {
   justify-content: center;
 }
 
-.merged-day-events.has-pair .merged-pair-badge {
+.merged-day-events.has-pair .merged-pair-badge,
+.merged-day-events.has-pair .merged-pair-slot {
   flex: 1 1 0;
   min-height: 0;
   margin: 0;
@@ -2131,6 +2155,15 @@ body {
   border-radius: 3px;
   background: #ff9500;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.merged-pair-slot {
+  flex: 0 0 auto;
+  display: flex;
+  min-height: 11px;
+  padding: 1px 2px;
+  box-sizing: border-box;
 }
 
 .merged-pair-badge-text {

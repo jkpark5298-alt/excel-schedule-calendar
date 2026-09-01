@@ -156,11 +156,15 @@ export default function IosMonthCalendar({
                           )}
                         </div>
                       )}
-                      {withOverlay && pairLabel && (
-                        <div className="merged-pair-badge" title={pairLabel}>
-                          <span className="merged-pair-badge-text">{pairLabel}</span>
-                        </div>
-                      )}
+                      {withOverlay ? (
+                        pairLabel ? (
+                          <div className="merged-pair-badge" title={pairLabel}>
+                            <span className="merged-pair-badge-text">{pairLabel}</span>
+                          </div>
+                        ) : (
+                          <div className="merged-pair-slot" aria-hidden="true" />
+                        )
+                      ) : null}
                       {withOverlay && overlayBoarding && (
                         <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-boarding-stack ios-ops-boarding-overlay">
                           <div
