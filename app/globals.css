@@ -311,15 +311,23 @@ body {
 }
 
 .iphone-app.layout-phone .ios-day-cell.ops-with-boarding:not(.merged-day-cell) {
-  --ios-day-cell-h: 86px;
+  --ios-day-cell-h: 96px;
   height: auto;
   min-height: var(--ios-day-cell-h);
   max-height: none;
-  overflow: visible;
+  overflow: hidden;
+  align-self: stretch;
 }
 
-.iphone-app.layout-phone .ios-day-events-overlay {
-  gap: 1px;
+.iphone-app.layout-phone .ops-overlay-month .ios-week-row {
+  align-items: stretch;
+}
+
+.iphone-app.layout-phone .ios-day-events-overlay.has-pair {
+  gap: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
 }
 
 .iphone-app.layout-phone .ios-day-slot-auto {
@@ -421,6 +429,17 @@ body {
   overflow: visible;
 }
 
+.iphone-app.layout-pc .ios-day-cell.ops-with-boarding:not(.merged-day-cell) {
+  --ios-day-cell-h: 172px;
+  min-height: var(--ios-day-cell-h);
+}
+
+.iphone-app.layout-pc .ios-day-events-overlay.has-pair {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
 .iphone-app.layout-pc .ios-day-cell.boarding-skd:not(.merged-day-cell) {
   --ios-day-cell-h: 92px;
   height: var(--ios-day-cell-h);
@@ -465,7 +484,8 @@ body {
   overflow: visible;
 }
 
-.iphone-app.layout-pc .merged-day-events.has-pair {
+.iphone-app.layout-pc .merged-day-events.has-pair,
+.iphone-app.layout-pc .ios-day-events-overlay.has-pair {
   gap: 10px;
 }
 
@@ -2095,17 +2115,34 @@ body {
 
 /* 중간 표기 있음 → 2/5 · 1/5 · 2/5 */
 .merged-day-events.has-pair .merged-ops-block,
-.merged-day-events.has-pair .merged-boarding-block {
+.merged-day-events.has-pair .merged-boarding-block,
+.ios-day-events-overlay.has-pair .merged-ops-block,
+.ios-day-events-overlay.has-pair .merged-boarding-block {
   flex: 2 1 0;
   min-height: 0;
   justify-content: center;
 }
 
 .merged-day-events.has-pair .merged-pair-badge,
-.merged-day-events.has-pair .merged-pair-slot {
+.merged-day-events.has-pair .merged-pair-slot,
+.ios-day-events-overlay.has-pair .merged-pair-badge,
+.ios-day-events-overlay.has-pair .merged-pair-slot {
   flex: 1 1 0;
   min-height: 0;
   margin: 0;
+}
+
+.ios-day-events-overlay.has-pair .merged-ops-block .ios-day-slot {
+  flex: 1 1 0;
+  min-height: 0;
+  max-height: none;
+  height: auto;
+}
+
+.ios-day-events-overlay.has-pair .merged-boarding-block .ios-skd-pill-boarding-dual {
+  height: 100%;
+  min-height: 0;
+  flex: 1 1 auto;
 }
 
 .merged-day-events.single-side .merged-ops-block,
