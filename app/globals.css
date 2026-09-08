@@ -313,7 +313,7 @@ body {
 .iphone-app.layout-phone .ios-day-cell.ops-with-boarding:not(.merged-day-cell) {
   --ios-day-cell-h: 96px;
   height: auto;
-  min-height: min-content;
+  min-height: var(--ios-day-cell-h);
   max-height: none;
   overflow: visible;
   align-self: stretch;
@@ -342,10 +342,26 @@ body {
   grid-template-rows: 1fr auto 1fr;
 }
 
-.iphone-app.layout-phone .ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair) {
-  display: flex;
-  flex-direction: column;
-  grid-template-rows: none;
+.iphone-app.layout-phone .ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair),
+.iphone-app.layout-phone .ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair {
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.iphone-app.layout-phone .ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair .merged-ops-block {
+  flex: 0 0 auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  align-self: start;
+  grid-row: 1;
+}
+
+.iphone-app.layout-phone .ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair .merged-boarding-block {
+  flex: 0 0 auto;
+  margin-top: 0;
+  margin-bottom: 0;
+  align-self: end;
+  grid-row: 2;
 }
 
 .iphone-app.layout-phone .ios-day-cell.ops-with-boarding .merged-ops-block {
@@ -523,9 +539,24 @@ body {
   grid-template-rows: 1fr auto 1fr;
 }
 
-.iphone-app.layout-pc .ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair) {
-  display: flex;
-  flex-direction: column;
+.iphone-app.layout-pc .ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair),
+.iphone-app.layout-pc .ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair {
+  display: grid;
+  grid-template-rows: 1fr auto;
+}
+
+.iphone-app.layout-pc .ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair .merged-ops-block {
+  flex: 0 0 auto;
+  margin-top: 0;
+  align-self: start;
+  grid-row: 1;
+}
+
+.iphone-app.layout-pc .ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair .merged-boarding-block {
+  flex: 0 0 auto;
+  margin-top: 0;
+  align-self: end;
+  grid-row: 2;
 }
 
 .iphone-app.layout-pc .ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair .merged-ops-block {
@@ -1687,7 +1718,7 @@ body {
 /* 김현숙 같이 보기: 상단 박종규 · 가운데 PICK UP · 하단 김현숙. 이름 잘리지 않게 */
 .ios-day-cell.ops-with-boarding {
   height: auto;
-  min-height: min-content;
+  min-height: var(--ios-day-cell-h);
   max-height: none;
   overflow: visible;
 }
@@ -1713,9 +1744,10 @@ body {
   grid-template-rows: 1fr auto 1fr;
 }
 
-.ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair) {
-  display: flex;
-  flex-direction: column;
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair),
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair {
+  display: grid;
+  grid-template-rows: 1fr auto;
 }
 
 .ios-day-cell.ops-with-boarding .ios-day-slot,
@@ -2320,6 +2352,37 @@ body {
   justify-content: center;
 }
 
+/* 페어 없음: 박종규 칸 상단 · 김현숙 칸 하단 */
+.merged-day-events.no-pair {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  gap: 1px;
+}
+
+.merged-day-events.no-pair .merged-ops-block {
+  grid-row: 1;
+  align-self: start;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+  min-height: min-content;
+  height: auto;
+}
+
+.merged-day-events.no-pair .merged-boarding-block {
+  grid-row: 2;
+  align-self: end;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  min-height: min-content;
+  height: auto;
+}
+
+.merged-day-events.no-pair .merged-ops-block .ios-skd-pill-ops-dual,
+.merged-day-events.no-pair .merged-boarding-block .ios-skd-pill-boarding-dual {
+  height: auto;
+  flex: 0 0 auto;
+}
+
 /* 중간 표기 있음 → 2/5 · 1/5 · 2/5 */
 .merged-day-events.has-pair .merged-ops-block,
 .merged-day-events.has-pair .merged-boarding-block,
@@ -2367,9 +2430,10 @@ body {
   grid-template-rows: 1fr auto 1fr;
 }
 
-.ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair) {
-  display: flex;
-  flex-direction: column;
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair),
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair {
+  display: grid;
+  grid-template-rows: 1fr auto;
 }
 
 .ios-day-cell.ops-with-boarding .merged-ops-block,
@@ -2380,6 +2444,11 @@ body {
   height: auto;
   overflow: visible;
   justify-content: flex-start;
+  grid-row: 1;
+  align-self: start;
+}
+
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair .merged-ops-block {
   grid-row: 1;
   align-self: start;
 }
@@ -2407,10 +2476,11 @@ body {
   align-self: end;
 }
 
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.no-pair .merged-boarding-block,
 .ios-day-cell.ops-with-boarding .ios-day-events-overlay:not(.has-pair) .merged-boarding-block {
-  grid-row: auto;
-  margin-top: auto;
-  align-self: stretch;
+  grid-row: 2;
+  margin-top: 0;
+  align-self: end;
 }
 
 .ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair .merged-ops-block .ios-day-slot,

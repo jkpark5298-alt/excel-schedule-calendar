@@ -131,7 +131,11 @@ export default function MergedMonthCalendar({
                 const pairLabel = cell.inMonth
                   ? getDualPairLabel(cell.opsDay?.myShift, cell.boardingDay?.myShift)
                   : null;
-                const layoutClass = cell.inMonth ? "has-pair" : "single-side";
+                const layoutClass = !cell.inMonth
+                  ? "single-side"
+                  : pairLabel
+                    ? "has-pair"
+                    : "no-pair";
 
                 return (
                   <button
@@ -176,7 +180,7 @@ export default function MergedMonthCalendar({
                         ) : null}
                       </div>
 
-                      {cell.inMonth ? <DualPairBadge label={pairLabel} /> : null}
+                      {pairLabel ? <DualPairBadge label={pairLabel} /> : null}
 
                       <div className="merged-boarding-block">
                         {cell.boardingDay ? (
