@@ -339,6 +339,16 @@ body {
   overflow: visible;
 }
 
+.iphone-app.layout-phone .ios-day-cell.ops-with-boarding .merged-ops-block,
+.iphone-app.layout-phone .ios-day-cell.ops-with-boarding .merged-boarding-block {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: min-content;
+  height: auto;
+  overflow: visible;
+  justify-content: flex-start;
+}
+
 .iphone-app.layout-phone .ios-day-slot-auto {
   flex: 0 0 auto;
   flex-shrink: 0;
@@ -2217,6 +2227,53 @@ body {
   height: 100%;
   min-height: 0;
   flex: 1 1 auto;
+}
+
+/* 박종규 탭 김현숙 같이 보기: 2/5 분할 대신 내용 높이로 쌓아 이름이 잘리지 않게 */
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay,
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair {
+  flex: 0 0 auto;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
+  gap: 1px;
+}
+
+.ios-day-cell.ops-with-boarding .merged-ops-block,
+.ios-day-cell.ops-with-boarding .merged-boarding-block,
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair .merged-ops-block,
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair .merged-boarding-block {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: min-content;
+  height: auto;
+  overflow: visible;
+  justify-content: flex-start;
+}
+
+.ios-day-cell.ops-with-boarding .merged-pair-badge,
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair .merged-pair-badge {
+  flex: 0 0 auto;
+  min-height: 14px;
+  height: auto;
+  overflow: visible;
+}
+
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair .merged-ops-block .ios-day-slot,
+.ios-day-cell.ops-with-boarding .merged-ops-block .ios-day-slot {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: min-content;
+  max-height: none;
+  height: auto;
+  overflow: visible;
+}
+
+.ios-day-cell.ops-with-boarding .merged-boarding-block .ios-skd-pill-boarding-dual,
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay.has-pair .merged-boarding-block .ios-skd-pill-boarding-dual {
+  height: auto;
+  min-height: 0;
+  flex: 0 0 auto;
 }
 
 .merged-day-events.single-side .merged-ops-block,

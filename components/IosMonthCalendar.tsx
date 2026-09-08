@@ -136,7 +136,7 @@ export default function IosMonthCalendar({
                       {schedule?.isLeader ? <span className="ios-day-leader" title="리더">👍</span> : null}
                       <span className="ios-day-num-text">{cell.date}</span>
                     </span>
-                    <div className={`ios-day-events ${boardingLayout ? "ios-day-events-boarding" : "ios-day-events-ops"} ${withOverlay ? "ios-day-events-overlay has-pair" : ""}`}>
+                    <div className={`ios-day-events ${boardingLayout ? "ios-day-events-boarding" : "ios-day-events-ops"} ${withOverlay ? `ios-day-events-overlay${pairLabel ? " has-pair" : ""}` : ""}`}>
                       {withOverlay ? (
                         <>
                           <div className="merged-ops-block">
@@ -150,9 +150,7 @@ export default function IosMonthCalendar({
                             <div className="merged-pair-badge" title={pairLabel}>
                               <span className="merged-pair-badge-text">{pairLabel}</span>
                             </div>
-                          ) : (
-                            <div className="merged-pair-slot" aria-hidden="true" />
-                          )}
+                          ) : null}
                           <div className="merged-boarding-block">
                             {overlayBoarding ? (
                               <div
