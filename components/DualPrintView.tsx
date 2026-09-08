@@ -169,22 +169,21 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
                   )}
                 </div>
 
-                {pairLabel && (
-                  <div
-                    style={{
-                      fontSize: "9px",
-                      fontWeight: 700,
-                      color: "#92400e",
-                      textAlign: "center",
-                      background: "#fef3c7",
-                      border: "1px solid #fcd34d",
-                      borderRadius: "4px",
-                      padding: "2px 4px",
-                    }}
-                  >
-                    {pairLabel}
-                  </div>
-                )}
+                <div
+                  style={{
+                    fontSize: "9px",
+                    fontWeight: 700,
+                    color: pairLabel ? "#92400e" : "transparent",
+                    textAlign: "center",
+                    background: pairLabel ? "#fef3c7" : "transparent",
+                    border: pairLabel ? "1px solid #fcd34d" : "1px solid transparent",
+                    borderRadius: "4px",
+                    padding: "2px 4px",
+                    minHeight: "18px",
+                  }}
+                >
+                  {pairLabel ?? "\u00a0"}
+                </div>
 
                 <div style={{ fontSize: "10px", color: boardingColor, lineHeight: 1.35 }}>
                   <span style={{ color: "#64748b" }}>{boardingTarget.slice(0, 1)} </span>

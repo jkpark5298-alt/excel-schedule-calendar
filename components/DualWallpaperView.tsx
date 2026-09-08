@@ -225,18 +225,18 @@ const DualWallpaperView = forwardRef<HTMLDivElement, Props>(function DualWallpap
                     ? "#fffbf0"
                     : "#ffffff";
 
-                const hasPair = !!pairLabel;
-                const n = cell.inMonth ? (hasPair ? 3 : 2) : 0;
+                const hasPairSlot = cell.inMonth;
+                const n = cell.inMonth ? 3 : 0;
                 const pillH =
                   n > 0 ? Math.floor((bodyAvail - PILL_GAP * (n - 1)) / n) : 0;
-                const pairH = hasPair ? Math.max(18, Math.floor(pillH * 0.9)) : 0;
+                const pairH = hasPairSlot ? Math.max(18, Math.floor(pillH * 0.9)) : 0;
                 // 3칸일 때 pair를 조금 낮추면 남는 높이를 ops/boarding에 분배
                 const mainH =
-                  hasPair && n === 3
+                  hasPairSlot && n === 3
                     ? Math.floor((bodyAvail - pairH - PILL_GAP * 2) / 2)
                     : pillH;
                 const fontSize = n > 0 ? fontForHeight(mainH) : 12;
-                const pairFont = hasPair ? Math.max(11, Math.min(16, Math.floor(pairH * 0.48))) : 11;
+                const pairFont = hasPairSlot ? Math.max(11, Math.min(16, Math.floor(pairH * 0.48))) : 11;
 
                 return (
                   <td
@@ -310,8 +310,8 @@ const DualWallpaperView = forwardRef<HTMLDivElement, Props>(function DualWallpap
                             </div>
                           )}
                         </div>
-                        {pairLabel && (
-                          <div style={{ height: pairH, marginBottom: PILL_GAP }}>
+                        <div style={{ height: pairH, marginBottom: PILL_GAP }}>
+                          {pairLabel ? (
                             <Pill
                               text={pairLabel}
                               bg="#fef3c7"
@@ -320,8 +320,8 @@ const DualWallpaperView = forwardRef<HTMLDivElement, Props>(function DualWallpap
                               size={pairFont}
                               center
                             />
-                          </div>
-                        )}
+                          ) : null}
+                        </div>
                         <div style={{ height: mainH }}>
                           {cell.boardingDay && boardingColors ? (
                             <Pill

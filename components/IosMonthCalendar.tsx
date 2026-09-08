@@ -68,7 +68,7 @@ export default function IosMonthCalendar({
       className={`ios-month-zoom-wrap${isPinching ? " is-pinching" : ""}`}
       style={{ transform: `scale(${zoom})`, width: `${100 / zoom}%` }}
     >
-      <div className="ios-month-wrap">
+      <div className={`ios-month-wrap${showBoardingOverlay ? " ops-overlay-month" : ""}`}>
         <div className="ios-month-titlebar">
           <span className="ios-month-title-left">{month}월</span>
           <span className="ios-month-title-right">{year}</span>
@@ -136,8 +136,40 @@ export default function IosMonthCalendar({
                       {schedule?.isLeader ? <span className="ios-day-leader" title="리더">👍</span> : null}
                       <span className="ios-day-num-text">{cell.date}</span>
                     </span>
-                    <div className={`ios-day-events ${boardingLayout ? "ios-day-events-boarding" : "ios-day-events-ops"} ${withOverlay ? "ios-day-events-overlay" : ""}`}>
-                      {!boardingLayout ? (
+                    <div className={`ios-day-events ${boardingLayout ? "ios-day-events-boarding" : "ios-day-events-ops"} ${withOverlay ? "ios-day-events-overlay has-pair" : ""}`}>
+                      {withOverlay ? (
+                        <>
+                          <div className="merged-ops-block">
+                            {schedule ? (
+                              <OpsSkdPills day={schedule} compact />
+                            ) : (
+                              <span className="merged-empty-tag">박 —</span>
+                            )}
+                          </div>
+                          {pairLabel ? (
+                            <div className="merged-pair-badge" title={pairLabel}>
+                              <span className="merged-pair-badge-text">{pairLabel}</span>
+                            </div>
+                          ) : (
+                            <div className="merged-pair-slot" aria-hidden="true" />
+                          )}
+                          <div className="merged-boarding-block">
+                            {overlayBoarding ? (
+                              <div
+                                className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ${skdPillClass(overlayBoarding.myShift)}`}
+                              >
+                                {skdPillBoardingLinesDual(overlayBoarding).map((line, i) => (
+                                  <span key={`ob-${i}-${line}`} className="ios-skd-boarding-line">
+                                    {line}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="merged-empty-tag merged-empty-tag-boarding">김 —</span>
+                            )}
+                          </div>
+                        </>
+                      ) : !boardingLayout ? (
                         schedule ? <OpsSkdPills day={schedule} compact /> : (
                           <div className="ios-day-slot ios-day-slot-top ios-day-slot-auto" />
                         )
@@ -154,24 +186,6 @@ export default function IosMonthCalendar({
                               ))}
                             </div>
                           )}
-                        </div>
-                      )}
-                      {withOverlay && pairLabel && (
-                        <div className="merged-pair-badge" title={pairLabel}>
-                          <span className="merged-pair-badge-text">{pairLabel}</span>
-                        </div>
-                      )}
-                      {withOverlay && overlayBoarding && (
-                        <div className="ios-day-slot ios-day-slot-bottom ios-day-slot-boarding-stack ios-ops-boarding-overlay">
-                          <div
-                            className={`ios-skd-pill ios-skd-pill-boarding ios-skd-pill-boarding-dual ${skdPillClass(overlayBoarding.myShift)}`}
-                          >
-                            {skdPillBoardingLinesDual(overlayBoarding).map((line, i) => (
-                              <span key={`ob-${i}-${line}`} className="ios-skd-boarding-line">
-                                {line}
-                              </span>
-                            ))}
-                          </div>
                         </div>
                       )}
                     </div>
