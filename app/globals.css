@@ -311,22 +311,29 @@ body {
 }
 
 .iphone-app.layout-phone .ios-day-cell.ops-with-boarding:not(.merged-day-cell) {
-  --ios-day-cell-h: 86px;
+  --ios-day-cell-h: 0;
   height: auto;
-  min-height: var(--ios-day-cell-h);
+  min-height: min-content;
   max-height: none;
   overflow: visible;
+  align-self: flex-start;
 }
 
 .iphone-app.layout-phone .ios-day-events-overlay {
   gap: 1px;
+  flex: 0 0 auto;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
 }
 
 .iphone-app.layout-phone .ios-day-slot-auto {
   flex: 0 0 auto;
-  min-height: 0;
+  flex-shrink: 0;
+  min-height: min-content;
   max-height: none;
   height: auto;
+  overflow: visible;
 }
 
 .iphone-app.layout-phone .ios-day-slot-auto .ios-skd-pill-stack {
@@ -425,6 +432,15 @@ body {
 }
 
 .iphone-app.layout-pc .ios-day-events {
+  overflow: visible;
+}
+
+.iphone-app.layout-pc .ios-day-cell.ops-with-boarding:not(.merged-day-cell) .ios-day-slot-auto {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: min-content;
+  max-height: none;
+  height: auto;
   overflow: visible;
 }
 
@@ -1336,6 +1352,10 @@ body {
   background: #fff;
 }
 
+.ios-month-grid:has(.ops-with-boarding) {
+  overflow: visible;
+}
+
 .ios-week-row {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -1492,9 +1512,11 @@ body {
 
 .ios-day-slot-auto {
   flex: 0 0 auto;
-  min-height: 0;
+  flex-shrink: 0;
+  min-height: min-content;
   max-height: none;
   height: auto;
+  overflow: visible;
 }
 
 .ios-day-slot-auto .ios-skd-pill-stack {
@@ -1507,6 +1529,53 @@ body {
   max-height: none;
   display: flex;
   align-items: stretch;
+}
+
+/* 김현숙 같이 보기: 박종규 익일/이름 블록이 잘리지 않게 셀·슬롯이 내용 높이만큼 늘어남 */
+.ios-day-cell.ops-with-boarding {
+  height: auto;
+  min-height: min-content;
+  max-height: none;
+  overflow: visible;
+}
+
+.ios-day-cell.ops-with-boarding .ios-day-events,
+.ios-day-cell.ops-with-boarding .ios-day-events-ops,
+.ios-day-cell.ops-with-boarding .ios-day-events-overlay {
+  flex: 0 0 auto;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
+}
+
+.ios-day-cell.ops-with-boarding .ios-day-slot,
+.ios-day-cell.ops-with-boarding .ios-day-slot-auto,
+.ios-day-cell.ops-with-boarding .ios-day-slot-boarding-stack,
+.ios-day-cell.ops-with-boarding .ios-ops-boarding-overlay {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  height: auto;
+  min-height: min-content;
+  max-height: none;
+  overflow: visible;
+}
+
+.ios-day-cell.ops-with-boarding .ios-skd-pill-stack,
+.ios-day-cell.ops-with-boarding .ios-skd-type-own {
+  overflow: visible;
+  height: auto;
+  max-height: none;
+}
+
+.ios-day-cell.ops-with-boarding .ios-skd-boarding-line {
+  white-space: normal;
+  overflow: visible;
+}
+
+.iphone-app.layout-pc .ios-day-cell.ops-with-boarding:not(.merged-day-cell) {
+  height: auto;
+  max-height: none;
+  overflow: visible;
 }
 
 /* TYPE + 이름 열 맞춤 — A/강정형 / 아래 이름·검정 동일 열 */
