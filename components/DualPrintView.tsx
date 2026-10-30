@@ -6,7 +6,7 @@ import { buildMergedMonthGrid } from "@/lib/mergeMonthGrid";
 import { DOW_KO } from "@/lib/monthGrid";
 import {
   formatShiftDisplay,
-  getDualPairLabel,
+  resolvePairLabel,
   isRestShift,
   skdPillBoardingLinesDual,
 } from "@/lib/shiftDisplay";
@@ -129,7 +129,7 @@ const DualPrintView = forwardRef<HTMLDivElement, Props>(function DualPrintView(
               );
             }
 
-            const pairLabel = getDualPairLabel(cell.opsDay?.myShift, cell.boardingDay?.myShift);
+            const pairLabel = resolvePairLabel(cell.opsDay, cell.boardingDay);
             const opsColor = cell.opsDay ? opsShiftColor(cell.opsDay.myShift) : "#94a3b8";
             const boardingColor = cell.boardingDay
               ? boardingShiftColor(cell.boardingDay.myShift)

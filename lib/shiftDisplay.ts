@@ -84,6 +84,19 @@ export function getDualPairLabel(
   return null;
 }
 
+export const PAIR_LABEL_PRESETS = ["동시出", "교대出退", "출근 지원", "현숙🚗", "동시休", "PICK UP", "동시退"];
+
+/** 수동 지정(pairLabel)이 있으면 우선, 없으면 자동 규칙 */
+export function resolvePairLabel(
+  opsDay: { myShift: ShiftCode; pairLabel?: string } | null | undefined,
+  boardingDay: { myShift: ShiftCode } | null | undefined,
+): string | null {
+  if (opsDay && boardingDay && opsDay.pairLabel !== undefined) {
+    return opsDay.pairLabel || null;
+  }
+  return getDualPairLabel(opsDay?.myShift, boardingDay?.myShift);
+}
+
 export function shiftClass(shift: ShiftCode): string {
   if (shift === "C") return "shift-C";
   if (shift === "A") return "shift-A";

@@ -3,7 +3,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ParsedSchedule, DaySchedule } from "@/types/schedule";
 import { DOW_KO } from "@/lib/monthGrid";
-import { BOARDING_TARGET, applyLeaderDates, formatLeaderDateInput, parseLeaderDateInput } from "@/lib/shiftDisplay";
+import { BOARDING_TARGET, applyLeaderDates, getDualPairLabel, formatLeaderDateInput, parseLeaderDateInput } from "@/lib/shiftDisplay";
 import IosMonthCalendar from "./IosMonthCalendar";
 import EditDayModal from "./EditDayModal";
 import DaySkdPanel from "./DaySkdPanel";
@@ -81,9 +81,18 @@ export default function ScheduleView({
     onScheduleUpdate({ ...schedule, days: sorted });
   }, [schedule, onScheduleUpdate]);
 
+  const pendingPair = useRef<{ value: string | undefined } | null>(null);
+
   const handleSaveEdit = useCallback((updated: DaySchedule) => {
-    persist(days.map(d => d.orderIndex === updated.orderIndex ? updated : d));
-    setSelectedDay(updated);
+    const pair = pendingPair.current;
+    pendingPair.current = null;
+    let next = updated;
+    if (pair) {
+      const { pairLabel: _omit, ...rest } = updated;
+      next = pair.value === undefined ? rest : { ...rest, pairLabel: pair.value };
+    }
+    persist(days.map(d => d.orderIndex === next.orderIndex ? next : d));
+    setSelectedDay(next);
     setEditDay(null);
   }, [days, persist]);
 
@@ -199,6 +208,10 @@ export default function ScheduleView({
   const overlayDays = overlayEnabled ? (overlaySchedule?.days ?? []) : [];
   const overlayDayForSelected = selectedDay && overlayDays.length
     ? overlayDays.find((d) => Number(d.date) === Number(selectedDay.date)) ?? null
+    : null;
+
+  const editOverlayDay = editDay
+    ? overlayDays.find((d) => Number(d.date) === Number(editDay.date)) ?? null
     : null;
 
   const toggleBoardingOverlay = () => {
@@ -333,7 +346,18 @@ export default function ScheduleView({
         />
       )}
       {editDay && (
-        <EditDayModal mode="edit" day={editDay} year={schedule.year} month={schedule.month} onSave={handleSaveEdit} onClose={() => setEditDay(null)} />
+        <EditDayModal
+          mode="edit"
+          day={editDay}
+          year={schedule.year}
+          month={schedule.month}
+          showPairLabel={!!editOverlayDay}
+          pairLabelAuto={editOverlayDay ? getDualPairLabel(editDay.myShift, editOverlayDay.myShift) : null}
+          pairLabelValue={editDay.pairLabel}
+          onPairLabelChange={(value) => { pendingPair.current = { value }; }}
+          onSave={handleSaveEdit}
+          onClose={() => { pendingPair.current = null; setEditDay(null); }}
+        />
       )}
       {addDay && (
         <EditDayModal

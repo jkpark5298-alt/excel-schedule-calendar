@@ -6,7 +6,7 @@ import {
   isBoardingSchedule,
   isBoardingDayLayout,
   isRestShift,
-  getDualPairLabel,
+  resolvePairLabel,
   skdPillBottomLines,
   skdPillBoardingLines,
   skdPillTopLines,
@@ -126,7 +126,7 @@ export default function MergedDaySkdPanel({
   onDeleteBoarding,
   onClose,
 }: Props) {
-  const pairLabel = getDualPairLabel(opsDay?.myShift, boardingDay?.myShift);
+  const pairLabel = resolvePairLabel(opsDay, boardingDay);
 
   return (
     <div className="day-skd-panel merged-day-skd-panel safe-bottom">

@@ -7,7 +7,7 @@ import {
   DOW_KO,
   skdPillClass,
 } from "@/lib/monthGrid";
-import { skdPillBoardingLinesDual, skdPillOpsLinesDual, getDualPairLabel } from "@/lib/shiftDisplay";
+import { skdPillBoardingLinesDual, skdPillOpsLinesDual, resolvePairLabel } from "@/lib/shiftDisplay";
 import { usePinchZoom } from "@/lib/usePinchZoom";
 
 interface Props {
@@ -129,7 +129,7 @@ export default function MergedMonthCalendar({
                 const sel = selectedDate === cell.date && cell.inMonth;
                 const clickable = cell.inMonth && hasSkd && !!onSelectCell;
                 const pairLabel = cell.inMonth
-                  ? getDualPairLabel(cell.opsDay?.myShift, cell.boardingDay?.myShift)
+                  ? resolvePairLabel(cell.opsDay, cell.boardingDay)
                   : null;
                 const layoutClass = !cell.inMonth
                   ? "single-side"

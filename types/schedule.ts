@@ -22,6 +22,8 @@ export interface DaySchedule {
     label: string;
   } | null;
   allWorkers: WorkerShift[];
+  /** 함께 캘린더 페어 표기 수동 지정 (박종규 일정에 저장). undefined=자동, ""=표기 없음 */
+  pairLabel?: string;
 }
 
 export interface ParsedSchedule {

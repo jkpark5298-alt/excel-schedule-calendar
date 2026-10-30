@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { DaySchedule, ShiftCode } from "@/types/schedule";
 import { DOW_KO } from "@/lib/monthGrid";
 import ShiftBadge from "./ShiftBadge";
-import { SHIFT_OPTIONS } from "@/lib/shiftDisplay";
+import { PAIR_LABEL_PRESETS, SHIFT_OPTIONS } from "@/lib/shiftDisplay";
 
 interface Props {
   mode?: "edit" | "add";
@@ -12,6 +12,11 @@ interface Props {
   year?: number;
   month?: number;
   shiftOptions?: ShiftCode[];
+  /** 페어 표기 편집 노출 여부 (함께 캘린더 연동 시) */
+  showPairLabel?: boolean;
+  pairLabelAuto?: string | null;
+  pairLabelValue?: string;
+  onPairLabelChange?: (value: string | undefined) => void;
   onSave: (updated: DaySchedule) => void;
   onClose: () => void;
 }
@@ -25,7 +30,8 @@ function relatedMetaForShift(shift: ShiftCode): { type: ShiftCode; label: string
 }
 
 export default function EditDayModal({
-  mode = "edit", day, year, month, shiftOptions = SHIFT_OPTIONS, onSave, onClose,
+  mode = "edit", day, year, month, shiftOptions = SHIFT_OPTIONS, showPairLabel = false,
+  pairLabelAuto = null, pairLabelValue, onPairLabelChange, onSave, onClose,
 }: Props) {
   const [date, setDate] = useState(day.date);
   const [dayOfWeek, setDayOfWeek] = useState(day.dayOfWeek);
@@ -33,6 +39,8 @@ export default function EditDayModal({
   const [isLeader, setIsLeader] = useState(day.isLeader);
   const [coworkersText, setCoworkersText] = useState(day.sameShiftCoworkers.join(", "));
   const [relatedText, setRelatedText] = useState(day.relatedCoworkers?.names.join(", ") ?? "");
+
+  const [pairLabel, setPairLabel] = useState<string | undefined>(pairLabelValue);
 
   const relatedMeta = useMemo(() => relatedMetaForShift(myShift), [myShift]);
 
@@ -75,6 +83,8 @@ export default function EditDayModal({
     const relatedCoworkers = meta && relatedNames.length > 0
       ? { type: meta.type, names: relatedNames, label: meta.label }
       : null;
+
+    if (showPairLabel && onPairLabelChange) onPairLabelChange(pairLabel);
 
     onSave({
       ...day,
@@ -155,6 +165,46 @@ export default function EditDayModal({
                     ? "당 근무자 이름"
                     : "익일 A 근무자 이름"
               }
+            />
+          </div>
+        )}
+
+        {showPairLabel && (
+          <div className="mb-4">
+            <label className="text-sm text-slate-400 mb-2 block">
+              함께 표기 (박종규 × 김현숙){pairLabel === undefined ? ` · 자동: ${pairLabelAuto ?? "없음"}` : ""}
+            </label>
+            <div className="flex flex-wrap gap-2 mb-2">
+              <button
+                type="button"
+                className={`btn btn-sm ${pairLabel === undefined ? "btn-primary" : "btn-secondary"}`}
+                onClick={() => setPairLabel(undefined)}
+              >
+                자동
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${pairLabel === "" ? "btn-primary" : "btn-secondary"}`}
+                onClick={() => setPairLabel("")}
+              >
+                표기 없음
+              </button>
+              {PAIR_LABEL_PRESETS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  className={`btn btn-sm ${pairLabel === p ? "btn-primary" : "btn-secondary"}`}
+                  onClick={() => setPairLabel(p)}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+            <input
+              className="iphone-input w-full"
+              value={pairLabel ?? ""}
+              onChange={(e) => setPairLabel(e.target.value === "" ? "" : e.target.value)}
+              placeholder="직접 입력 (예: 교대出退)"
             />
           </div>
         )}

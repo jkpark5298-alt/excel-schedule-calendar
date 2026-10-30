@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DaySchedule, ParsedSchedule } from "@/types/schedule";
-import { BOARDING_SHIFT_OPTIONS, applyLeaderDates, formatLeaderDateInput, parseLeaderDateInput } from "@/lib/shiftDisplay";
+import { BOARDING_SHIFT_OPTIONS, applyLeaderDates, getDualPairLabel, formatLeaderDateInput, parseLeaderDateInput } from "@/lib/shiftDisplay";
 import MergedMonthCalendar from "./MergedMonthCalendar";
 import MergedDaySkdPanel from "./MergedDaySkdPanel";
 import EditDayModal from "./EditDayModal";
@@ -61,6 +61,7 @@ export default function DualScheduleView({
   const [isWallpaper, setIsWallpaper] = useState(false);
   const [leaderDateInput, setLeaderDateInput] = useState("");
   const [leaderPickMode, setLeaderPickMode] = useState(false);
+  const pendingPair = useRef<{ value: string | undefined } | null>(null);
   const printRef = useRef<HTMLDivElement>(null);
   const wallpaperRef = useRef<HTMLDivElement>(null);
 
@@ -170,13 +171,33 @@ export default function DualScheduleView({
 
   const handleSaveEdit = useCallback((updated: DaySchedule) => {
     if (!editState) return;
+    const pair = pendingPair.current;
+    pendingPair.current = null;
+    const withPair = (d: DaySchedule, value: string | undefined): DaySchedule => {
+      const { pairLabel: _omit, ...rest } = d;
+      return value === undefined ? rest : { ...rest, pairLabel: value };
+    };
     if (editState.target === "ops") {
-      persistOps(opsDays.map((d) => (d.orderIndex === updated.orderIndex ? updated : d)));
+      const next = pair ? withPair(updated, pair.value) : updated;
+      persistOps(opsDays.map((d) => (d.orderIndex === updated.orderIndex ? next : d)));
+    } else if (pair && opsSchedule && !opsLocked && boardingSchedule) {
+      const sortedOps = opsDays
+        .map((d) => (d.date === updated.date ? withPair(d, pair.value) : d))
+        .sort((a, b) => a.orderIndex - b.orderIndex);
+      const sortedBoarding = boardingDays
+        .map((d) => (d.orderIndex === updated.orderIndex ? updated : d))
+        .sort((a, b) => a.orderIndex - b.orderIndex);
+      onOpsScheduleUpdate({ ...opsSchedule, days: sortedOps });
+      onBoardingScheduleUpdate({ ...boardingSchedule, days: sortedBoarding });
+      refreshSelected(sortedOps, sortedBoarding);
     } else {
       persistBoarding(boardingDays.map((d) => (d.orderIndex === updated.orderIndex ? updated : d)));
     }
     setEditState(null);
-  }, [editState, opsDays, boardingDays, persistOps, persistBoarding]);
+  }, [
+    editState, opsDays, boardingDays, opsSchedule, boardingSchedule, opsLocked,
+    persistOps, persistBoarding, onOpsScheduleUpdate, onBoardingScheduleUpdate, refreshSelected,
+  ]);
 
   useEffect(() => {
     setLeaderDateInput(formatLeaderDateInput(opsDays));
@@ -217,6 +238,9 @@ export default function DualScheduleView({
     persistOps(nextDays);
     setLeaderDateInput(formatLeaderDateInput(nextDays));
   }, [opsLocked, opsDays, persistOps]);
+
+  const editOpsDay = editState ? opsDays.find((d) => d.date === editState.day.date) : undefined;
+  const editBoardingDay = editState ? boardingDays.find((d) => d.date === editState.day.date) : undefined;
 
   return (
     <div className={`iphone-schedule-body merged-schedule-body ${selected ? "with-panel" : ""}`}>
@@ -365,8 +389,12 @@ export default function DualScheduleView({
           year={year}
           month={month}
           shiftOptions={editState.target === "boarding" ? BOARDING_SHIFT_OPTIONS : undefined}
+          showPairLabel={!!editOpsDay && !!editBoardingDay && !(editState.target === "boarding" && opsLocked)}
+          pairLabelAuto={getDualPairLabel(editOpsDay?.myShift, editBoardingDay?.myShift)}
+          pairLabelValue={editOpsDay?.pairLabel}
+          onPairLabelChange={(value) => { pendingPair.current = { value }; }}
           onSave={handleSaveEdit}
-          onClose={() => setEditState(null)}
+          onClose={() => { pendingPair.current = null; setEditState(null); }}
         />
       )}
 

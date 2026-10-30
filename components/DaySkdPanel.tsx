@@ -5,7 +5,7 @@ import ShiftBadge from "./ShiftBadge";
 import {
   isBoardingDayLayout,
   isRestShift,
-  getDualPairLabel,
+  resolvePairLabel,
   skdPillBottomLines,
   skdPillBoardingLines,
   skdPillTopLines,
@@ -34,7 +34,7 @@ export default function DaySkdPanel({
   const topLines = boarding ? skdPillBoardingLines(day) : skdPillTopLines(day);
   const bottomLines = !boarding ? skdPillBottomLines(day) : [];
   const pairLabel = overlayBoardingDay
-    ? getDualPairLabel(day.myShift, overlayBoardingDay.myShift)
+    ? resolvePairLabel(day, overlayBoardingDay)
     : null;
   const overlayLines = overlayBoardingDay ? skdPillBoardingLines(overlayBoardingDay) : [];
 

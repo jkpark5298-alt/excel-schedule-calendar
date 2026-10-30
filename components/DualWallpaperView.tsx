@@ -6,7 +6,7 @@ import { buildMergedMonthGrid } from "@/lib/mergeMonthGrid";
 import { DOW_KO } from "@/lib/monthGrid";
 import {
   formatShiftDisplay,
-  getDualPairLabel,
+  resolvePairLabel,
   isRestShift,
   skdPillBoardingLinesDual,
   skdPillClass,
@@ -213,7 +213,7 @@ const DualWallpaperView = forwardRef<HTMLDivElement, Props>(function DualWallpap
             <tr key={wi} style={{ height: rowH }}>
               {week.map((cell, di) => {
                 const pairLabel = cell.inMonth
-                  ? getDualPairLabel(cell.opsDay?.myShift, cell.boardingDay?.myShift)
+                  ? resolvePairLabel(cell.opsDay, cell.boardingDay)
                   : null;
                 const opsColors = cell.opsDay ? pillStyle(cell.opsDay.myShift) : null;
                 const boardingColors = cell.boardingDay

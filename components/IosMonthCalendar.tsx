@@ -11,7 +11,7 @@ import {
 import { computeOpsMonthStats, formatWon } from "@/lib/opsMonthStats";
 import { usePinchZoom } from "@/lib/usePinchZoom";
 import OpsSkdPills from "./OpsSkdPills";
-import { getDualPairLabel, skdPillBoardingLinesDual } from "@/lib/shiftDisplay";
+import { resolvePairLabel, skdPillBoardingLinesDual } from "@/lib/shiftDisplay";
 
 interface Props {
   year: number;
@@ -101,7 +101,7 @@ export default function IosMonthCalendar({
                 const boardingLayout = schedule ? isBoardingDayLayout(days, schedule.myShift) : false;
                 const overlayBoarding = cell.inMonth ? boardingByDate.get(cell.date) ?? null : null;
                 const pairLabel = overlayBoarding
-                  ? getDualPairLabel(schedule?.myShift, overlayBoarding.myShift)
+                  ? resolvePairLabel(schedule, overlayBoarding)
                   : null;
                 const withOverlay = showBoardingOverlay && cell.inMonth;
                 const clickable = hasSkd || (cell.inMonth && !!onEmptyDayClick) || (leaderPickMode && cell.inMonth && !!schedule);
