@@ -91,6 +91,27 @@ function findSheetLayout(worksheet: ExcelJS.Worksheet): SheetLayout | null {
     });
   });
 
+  // 탑승수속팀 양식: "이름"(또는 "성명") 헤더 행이 요일 행, 바로 윗줄이 날짜(1~31) 행
+  if (dateHeaderRow === -1) {
+    worksheet.eachRow((row, rowNum) => {
+      if (dateHeaderRow !== -1 || rowNum < 2) return;
+      row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        if (dateHeaderRow !== -1) return;
+        const text = cellText(cell);
+        if (text !== "이름" && text !== "성명") return;
+        const above = worksheet.getRow(rowNum - 1);
+        let numericCount = 0;
+        above.eachCell({ includeEmpty: false }, (c, col) => {
+          if (col > colNumber && /^\d{1,2}$/.test(cellText(c))) numericCount++;
+        });
+        if (numericCount >= 28) {
+          dateHeaderRow = rowNum - 1;
+          nameCol = colNumber;
+        }
+      });
+    });
+  }
+
   if (dateHeaderRow === -1 || nameCol === -1) return null;
 
   const dayOfWeekRow = dateHeaderRow + 1;
