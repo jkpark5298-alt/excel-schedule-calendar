@@ -214,7 +214,10 @@ export default function BoardingSkdInputView({
                         value={day.myShift}
                         onChange={(e) => updateShift(day.orderIndex, e.target.value as ShiftCode)}
                       >
-                        {BOARDING_SHIFT_OPTIONS.map((s) => (
+                        {(BOARDING_SHIFT_OPTIONS.includes(day.myShift)
+                          ? BOARDING_SHIFT_OPTIONS
+                          : [...BOARDING_SHIFT_OPTIONS, day.myShift]
+                        ).map((s) => (
                           <option key={s} value={s}>{s}</option>
                         ))}
                       </select>

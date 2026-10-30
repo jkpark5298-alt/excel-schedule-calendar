@@ -1,6 +1,6 @@
 import { DaySchedule, ShiftCode } from "@/types/schedule";
 
-export const REST_RAW = new Set(["전", "X", "휴", "休", "주", "연", "오프"]);
+export const REST_RAW = new Set(["전", "X", "휴", "休", "주", "연", "오프", "이", "생"]);
 export const WORK_SHIFTS = new Set(["C", "A", "당"]);
 
 /** Display label with time range for boarding-team SKD codes */
@@ -26,7 +26,7 @@ export function normalizeShift(raw: string | null | undefined): ShiftCode {
 }
 
 export const BOARDING_SHIFTS = new Set(["B7", "A5", "P", "D", "P6", "P7", "교육"]);
-export const BOARDING_SHIFT_OPTIONS: ShiftCode[] = ["B7", "A5", "P", "D", "P6", "P7", "休", "교육"];
+export const BOARDING_SHIFT_OPTIONS: ShiftCode[] = ["B7", "A5", "P", "D", "P6", "P7", "休", "교육", "파견"];
 export const BOARDING_TARGET = "김현숙";
 
 /** 탑승수속 월간 스케줄 여부 (B7/A5/P/D/P6 포함 시) */
