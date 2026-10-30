@@ -70,7 +70,7 @@ export function buildMonthGrid(
   const sorted = [...days].sort((a, b) => a.orderIndex - b.orderIndex);
   for (const day of sorted) {
     const cell = flat.find(
-      (c) => !c.schedule && c.date === day.date && c.dayOfWeek === day.dayOfWeek,
+      (c) => !c.schedule && c.inMonth && c.date === day.date,
     );
     if (cell) cell.schedule = day;
   }

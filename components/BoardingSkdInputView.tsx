@@ -105,7 +105,10 @@ export default function BoardingSkdInputView({
       targetName: BOARDING_TARGET,
       year,
       month,
-      days: sortedDays,
+      days: sortedDays.map((d) => ({
+        ...d,
+        dayOfWeek: DOW_KO[new Date(year, month - 1, d.date).getDay()],
+      })),
     });
     onClose();
   };
