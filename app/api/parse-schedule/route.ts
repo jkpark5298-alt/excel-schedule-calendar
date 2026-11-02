@@ -50,6 +50,20 @@ function cellText(cell: ExcelJS.Cell): string {
   return String(v).trim();
 }
 
+/** 날짜 헤더 셀 → 일(1~31). 숫자·숫자 문자열·날짜 값(서식 d) 모두 지원 */
+function headerDateNumber(cell: ExcelJS.Cell): number | null {
+  const val = cell.value;
+  let n: number | null = null;
+  if (typeof val === "number") n = val;
+  else if (val instanceof Date) n = val.getUTCDate();
+  else if (typeof val === "object" && val && "result" in val) {
+    const res = (val as ExcelJS.CellFormulaValue).result;
+    if (typeof res === "number") n = res;
+    else if (res instanceof Date) n = res.getUTCDate();
+  } else if (typeof val === "string" && /^\d+$/.test(val.trim())) n = parseInt(val.trim(), 10);
+  return n != null && Number.isInteger(n) && n >= 1 && n <= 31 ? n : null;
+}
+
 function isKoreanName(text: string): boolean {
   return /^[가-힣]{2,4}$/.test(text);
 }
@@ -84,7 +98,8 @@ function findSheetLayout(worksheet: ExcelJS.Worksheet): SheetLayout | null {
   worksheet.eachRow((row, rowNum) => {
     row.eachCell({ includeEmpty: false }, (cell, colNumber) => {
       const text = cellText(cell);
-      if (text === "일자" && dateHeaderRow === -1) {
+      // 일자/성명이 한 칸에 줄바꿈·공백으로 섞인 병합 헤더도 허용
+      if (text.replace(/\s+/g, "").startsWith("일자") && dateHeaderRow === -1) {
         dateHeaderRow = rowNum;
         nameCol = colNumber;
       }
@@ -102,7 +117,7 @@ function findSheetLayout(worksheet: ExcelJS.Worksheet): SheetLayout | null {
         const above = worksheet.getRow(rowNum - 1);
         let numericCount = 0;
         above.eachCell({ includeEmpty: false }, (c, col) => {
-          if (col > colNumber && /^\d{1,2}$/.test(cellText(c))) numericCount++;
+          if (col > colNumber && headerDateNumber(c) != null) numericCount++;
         });
         if (numericCount >= 28) {
           dateHeaderRow = rowNum - 1;
@@ -121,17 +136,18 @@ function findSheetLayout(worksheet: ExcelJS.Worksheet): SheetLayout | null {
 
   dateRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
     if (colNumber <= nameCol) return;
-    const val = cell.value;
-    const dateNum =
-      typeof val === "number"
-        ? val
-        : typeof val === "string" && /^\d+$/.test(val.trim())
-          ? parseInt(val.trim(), 10)
-          : null;
-    if (dateNum == null || dateNum < 1 || dateNum > 31) return;
+    const dateNum = headerDateNumber(cell);
+    if (dateNum == null) return;
     const dow = cellText(dayRow.getCell(colNumber));
     colInfo[colNumber] = { date: dateNum, dayOfWeek: dow };
   });
+
+  // 전월 말일 열(예: 첫 열 31) 제거: 1일 열 이전의 열은 버린다
+  const orderedCols = Object.keys(colInfo).map(Number).sort((a, b) => a - b);
+  const firstDayIdx = orderedCols.findIndex((c) => colInfo[c].date === 1);
+  if (firstDayIdx > 0) {
+    for (const c of orderedCols.slice(0, firstDayIdx)) delete colInfo[c];
+  }
 
   const firstDateCol = Math.min(...Object.keys(colInfo).map(Number));
   if (!Number.isFinite(firstDateCol)) return null;
