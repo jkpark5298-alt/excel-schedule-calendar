@@ -78,9 +78,30 @@ function hasDiagonalBorder(cell: ExcelJS.Cell): boolean {
   return !!(diagDown || diagUp);
 }
 
+/** 노란 배경(RGB에서 R·G 높고 B 낮음) */
+function hasYellowFill(cell: ExcelJS.Cell): boolean {
+  const fill = cell.style?.fill as { type?: string; fgColor?: { argb?: string } } | undefined;
+  const argb = fill?.type === "pattern" ? fill.fgColor?.argb : undefined;
+  if (!argb || argb.length < 8) return false;
+  const r = parseInt(argb.slice(2, 4), 16);
+  const g = parseInt(argb.slice(4, 6), 16);
+  const b = parseInt(argb.slice(6, 8), 16);
+  return r >= 200 && g >= 200 && b <= 100;
+}
+
+function hasUnderline(cell: ExcelJS.Cell): boolean {
+  if (cell.font?.underline) return true;
+  const v = cell.value;
+  if (v && typeof v === "object" && "richText" in v) {
+    return (v as ExcelJS.CellRichTextValue).richText.some((r) => !!r.font?.underline);
+  }
+  return false;
+}
+
+/** 리더: 대각선 테두리 · 노란 배경 · 밑줄 중 하나라도 있으면 */
 function isLeaderCell(cell: ExcelJS.Cell, rawShift: string): boolean {
   if (!WORK_SHIFTS.has(rawShift)) return false;
-  return hasDiagonalBorder(cell);
+  return hasDiagonalBorder(cell) || hasYellowFill(cell) || hasUnderline(cell);
 }
 
 interface SheetLayout {
