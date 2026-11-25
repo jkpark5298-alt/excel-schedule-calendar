@@ -1,20 +1,20 @@
 import { DaySchedule, ShiftCode } from "@/types/schedule";
 
-/** 근무 일수에 포함되는 운항 TYPE (노조·노교·노고 표기 혼용 허용) */
-const OPS_WORK_TYPES = new Set(["C", "A", "당", "교육", "노조", "노교", "노고"]);
+/** 근무 일수에 포함되는 운항 TYPE (노조·노교·노고 표기 혼용 허용, 유급조합 포함) */
+const OPS_WORK_TYPES = new Set(["C", "A", "당", "교육", "노조", "노교", "노고", "유급조합"]);
 
 /** 식권 1장 TYPE */
-const MEAL_ONE = new Set(["C", "교육", "노조", "노교", "노고", "당"]);
+const MEAL_ONE = new Set(["C", "교육", "노조", "노교", "노고", "유급조합", "당"]);
 
 export const COMMUTE_ALLOWANCE_PER_DAY = 12_000;
 export const MEAL_TICKET_PRICE = 8_000;
 
 export interface OpsMonthStats {
-  /** C/A/당/교육/노조 일수 */
+  /** C/A/당/교육/노조/유급조합 일수 */
   workDays: number;
   /** 근무일수 − CA 연속 쌍 */
   attendanceDays: number;
-  /** C·교육·노조·당=1, A=2 */
+  /** C·교육·노조·유급조합·당=1, A=2 */
   mealTickets: number;
   /** 근무일수 × 12,000원 */
   commuteAllowance: number;
@@ -34,9 +34,9 @@ export function isOpsWorkType(shift: ShiftCode): boolean {
 
 /**
  * 박종규(운항) 월간 집계
- * - 근무: C, A, 당, 교육, 노조
+ * - 근무: C, A, 당, 교육, 노조, 유급조합
  * - 출근: 근무일수에서 CA 연속(C 다음날 A)마다 1일 차감
- * - 식권: C/교육/노조/당=1장, A=2장
+ * - 식권: C/교육/노조/유급조합/당=1장, A=2장
  * - 출근보조비: 근무일수 × 12,000
  * - 식권비용: 식권 수 × 8,000
  */
