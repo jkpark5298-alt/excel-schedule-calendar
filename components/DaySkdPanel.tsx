@@ -2,7 +2,6 @@
 
 import { DaySchedule } from "@/types/schedule";
 import ShiftBadge from "./ShiftBadge";
-import type { CalendarEventView } from "@/lib/eventStorage";
 import {
   isBoardingDayLayout,
   isRestShift,
@@ -21,8 +20,6 @@ interface Props {
   allDays?: DaySchedule[];
   overlayBoardingDay?: DaySchedule | null;
   overlayBoardingName?: string;
-  /** 이 날의 가져온 ICS 일정 */
-  events?: CalendarEventView[];
   onEdit: () => void;
   onDelete: () => void;
   onClose: () => void;
@@ -30,7 +27,7 @@ interface Props {
 
 export default function DaySkdPanel({
   day, year, month, boardingMode = false, allDays = [], overlayBoardingDay = null, overlayBoardingName,
-  events = [], onEdit, onDelete, onClose,
+  onEdit, onDelete, onClose,
 }: Props) {
   const isRest = isRestShift(day.myShift);
   const boarding = boardingMode && isBoardingDayLayout(allDays.length ? allDays : [day], day.myShift);
@@ -109,22 +106,6 @@ export default function DaySkdPanel({
             ) : (
               <p className="day-skd-rest-note">일정 없음</p>
             )}
-          </div>
-        )}
-        {events.length > 0 && (
-          <div className="day-skd-overlay-block">
-            <p className="day-skd-overlay-title day-skd-events-title">일정 (한국시간)</p>
-            {events.map((e) => (
-              <div key={e.id} className="day-skd-event">
-                <span className="events-icon" style={{ borderColor: e.color }}>{e.icon}</span>
-                <span className="day-skd-event-time">{e.timeLabel}</span>
-                <span className="day-skd-event-body">
-                  <span className="day-skd-event-title">{e.title}</span>
-                  {e.location && <span className="day-skd-event-sub">{e.location}</span>}
-                  <span className="day-skd-event-sub">{e.calendarName}</span>
-                </span>
-              </div>
-            ))}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect, useMemo } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { ParsedSchedule, DaySchedule } from "@/types/schedule";
 import { DOW_KO } from "@/lib/monthGrid";
 import { BOARDING_TARGET, applyLeaderDates, getDualPairLabel, formatLeaderDateInput, parseLeaderDateInput } from "@/lib/shiftDisplay";
@@ -18,7 +18,6 @@ import { exportElementAsPdf } from "@/lib/exportPdf";
 import { exportElementAsWallpaper } from "@/lib/exportWallpaper";
 import { ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP, clampZoom } from "@/lib/usePinchZoom";
 import { loadShowBoardingOnOps, saveShowBoardingOnOps } from "@/lib/overlayPref";
-import { ImportedCalendar, eventsByDateForMonth } from "@/lib/eventStorage";
 
 interface Props {
   schedule: ParsedSchedule;
@@ -34,18 +33,12 @@ interface Props {
   overlaySchedule?: ParsedSchedule | null;
   overlayName?: string;
   toolPanel?: ToolPanel;
-  /** 가져온 ICS 일정 (달력에 함께 표시) */
-  importedCalendars?: ImportedCalendar[];
 }
 
 export default function ScheduleView({
   schedule, isLocked = false, onToggleLock, onScheduleUpdate, onDelete, onReupload, onBackup, onRestore, onBoardingInput,
-  onPdfExportReady, overlaySchedule = null, overlayName, toolPanel = null, importedCalendars,
+  onPdfExportReady, overlaySchedule = null, overlayName, toolPanel = null,
 }: Props) {
-  const eventsByDate = useMemo(
-    () => eventsByDateForMonth(importedCalendars ?? [], schedule.year, schedule.month),
-    [importedCalendars, schedule.year, schedule.month],
-  );
   const [days, setDays] = useState<DaySchedule[]>(schedule.days);
   const [selectedDay, setSelectedDay] = useState<DaySchedule | null>(null);
   const [editDay, setEditDay] = useState<DaySchedule | null>(null);
@@ -336,7 +329,6 @@ export default function ScheduleView({
         onToggleLeader={!boardingMode ? handleToggleLeader : undefined}
         boardingDays={overlayDays}
         showBoardingOverlay={overlayEnabled && overlayDays.length > 0}
-        eventsByDate={eventsByDate}
       />
 
       {selectedDay && !editDay && (
@@ -348,7 +340,6 @@ export default function ScheduleView({
           allDays={days}
           overlayBoardingDay={overlayDayForSelected}
           overlayBoardingName={overlayEnabled ? overlayName : undefined}
-          events={eventsByDate.get(Number(selectedDay.date)) ?? []}
           onEdit={() => { if (!isLocked) setEditDay(selectedDay); }}
           onDelete={() => { if (!isLocked) handleDeleteDay(selectedDay.orderIndex); }}
           onClose={() => setSelectedDay(null)}

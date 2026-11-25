@@ -19,11 +19,6 @@ import ScheduleView from "./ScheduleView";
 import DualScheduleView from "./DualScheduleView";
 import EmptyScheduleView from "./EmptyScheduleView";
 import BoardingSkdInputView from "./BoardingSkdInputView";
-import EventsPanel from "./EventsPanel";
-import UpcomingEventsBanner from "./UpcomingEventsBanner";
-import {
-  BACKUP_FIELD, ImportedCalendar, loadImportedCalendars, saveImportedCalendars,
-} from "@/lib/eventStorage";
 
 const OPS_TARGET = "박종규";
 
@@ -45,11 +40,9 @@ export default function IphoneCalendarApp() {
   const [hydrated, setHydrated] = useState(false);
   const [pdfExport, setPdfExport] = useState<PdfExportActions | null>(null);
   const [toolPanel, setToolPanel] = useState<ToolPanel>(null);
-  const [calendars, setCalendars] = useState<ImportedCalendar[]>([]);
 
   useEffect(() => {
     void loadStoredCalendar().then(setStored);
-    setCalendars(loadImportedCalendars());
     setLayoutMode(loadLayoutMode());
     setHydrated(true);
   }, []);
@@ -117,28 +110,20 @@ export default function IphoneCalendarApp() {
     setStored((prev) => deleteScheduleForMonth(prev, targetName, year, month));
   }, [year, month]);
 
-  const handleCalendarsChange = useCallback((next: ImportedCalendar[]) => {
-    setCalendars(next);
-    saveImportedCalendars(next);
-  }, []);
-
   const handleRestore = useCallback(async (file: File) => {
     try {
       const text = await file.text();
       const next = importBackupJson(text);
       setStored(next);
-      const backupCalendars = (JSON.parse(text) as Record<string, unknown>)[BACKUP_FIELD];
-      if (Array.isArray(backupCalendars)) handleCalendarsChange(backupCalendars as ImportedCalendar[]);
       alert(`복원 완료: ${listStoredMonths(next).length}개월`);
     } catch (e) {
       alert(String(e));
     }
-  }, [handleCalendarsChange]);
+  }, []);
 
   const handleBackup = useCallback(() => {
-    // 가져온 일정(ICS)도 같은 백업 파일에 넣는다
-    downloadBackup({ ...stored, [BACKUP_FIELD]: calendars } as StoredCalendarData);
-  }, [stored, calendars]);
+    downloadBackup(stored);
+  }, [stored]);
 
   const handleToggleLock = useCallback(() => {
     if (!schedule) return;
@@ -290,18 +275,6 @@ export default function IphoneCalendarApp() {
         </div>
       )}
 
-      {toolPanel === "events" && (
-        <EventsPanel
-          year={year}
-          month={month}
-          calendars={calendars}
-          onChange={handleCalendarsChange}
-          opsSchedule={opsSchedule}
-        />
-      )}
-
-      <UpcomingEventsBanner calendars={calendars} stored={stored} opsTarget={OPS_TARGET} />
-
       {activeTab === "dual" ? (
         <DualScheduleView
           toolPanel={toolPanel}
@@ -333,7 +306,6 @@ export default function IphoneCalendarApp() {
           overlaySchedule={!isBoardingPerson ? boardingSchedule : null}
           overlayName={!isBoardingPerson ? BOARDING_TARGET : undefined}
           onPdfExportReady={setPdfExport}
-          importedCalendars={calendars}
         />
       ) : (
         <>

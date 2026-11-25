@@ -1,6 +1,6 @@
 "use client";
 
-export type ToolPanel = "manage" | "manage2" | "leader" | "events" | null;
+export type ToolPanel = "manage" | "manage2" | "leader" | null;
 
 interface Props {
   active: ToolPanel;
@@ -44,15 +44,6 @@ export default function IphoneToolTabs({ active, onChange, showLeader = true }: 
           리더
         </button>
       )}
-      <button
-        type="button"
-        role="tab"
-        aria-selected={active === "events"}
-        className={`btn btn-sm iphone-manage-btn ${active === "events" ? "btn-primary" : "btn-secondary"}`}
-        onClick={() => toggle("events")}
-      >
-        일정
-      </button>
     </div>
   );
 }

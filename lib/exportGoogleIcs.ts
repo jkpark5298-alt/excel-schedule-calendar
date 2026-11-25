@@ -111,40 +111,6 @@ function triggerAnchorDownload(ics: string, filename: string): void {
 }
 
 /**
- * ICS 파일 전달 — 휴대폰: 공유 시트(캘린더 앱으로 열기) / PC: 파일 다운로드
- * @returns "shared" | "downloaded" | "cancelled"
- */
-export async function shareOrDownloadIcs(
-  ics: string,
-  filename: string,
-  title: string,
-  text: string,
-): Promise<"shared" | "downloaded" | "cancelled"> {
-  const file = new File([ics], filename, { type: "text/calendar;charset=utf-8" });
-  const nav = navigator as Navigator & {
-    canShare?: (data?: ShareData) => boolean;
-    share?: (data: ShareData) => Promise<void>;
-  };
-
-  // 데스크톱(Google 가져오기용)은 공유보다 직접 다운로드가 안정적
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-  if (isMobile) {
-    try {
-      if (nav.share && nav.canShare?.({ files: [file] })) {
-        await nav.share({ files: [file], title, text });
-        return "shared";
-      }
-    } catch (e) {
-      if (e instanceof DOMException && e.name === "AbortError") return "cancelled";
-    }
-  }
-
-  triggerAnchorDownload(ics, filename);
-  return "downloaded";
-}
-
-/**
  * iPhone: Web Share / Desktop: 파일 다운로드
  */
 export async function downloadMonthIcs(
@@ -159,19 +125,36 @@ export async function downloadMonthIcs(
 
   const ics = buildMonthIcs(schedule, includeRest);
   const filename = icsFilename(schedule);
-  const result = await shareOrDownloadIcs(
-    ics,
-    filename,
-    `${schedule.targetName} ${schedule.year}-${pad(schedule.month)}`,
-    `근무 일정 ${count}건 ICS`,
-  );
+  const file = new File([ics], filename, { type: "text/calendar;charset=utf-8" });
+
+  const nav = navigator as Navigator & {
+    canShare?: (data?: ShareData) => boolean;
+    share?: (data: ShareData) => Promise<void>;
+  };
+
+  // 데스크톱(Google 가져오기용)은 공유보다 직접 다운로드가 안정적
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-  if (result === "downloaded" && !isMobile) {
+
+  if (isMobile) {
+    try {
+      if (nav.share && nav.canShare?.({ files: [file] })) {
+        await nav.share({
+          files: [file],
+          title: `${schedule.targetName} ${schedule.year}-${pad(schedule.month)}`,
+          text: `근무 일정 ${count}건 ICS`,
+        });
+        return;
+      }
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") return;
+    }
+  }
+
+  triggerAnchorDownload(ics, filename);
+  if (!isMobile) {
     window.setTimeout(() => {
       alert(
-        `ICS ${count}건 저장됨 (${filename})
-
-Google Calendar → 설정 → 가져오기 → 이 파일을 선택하세요.`,
+        `ICS ${count}건 저장됨 (${filename})\n\nGoogle Calendar → 설정 → 가져오기 → 이 파일을 선택하세요.`,
       );
     }, 300);
   }
