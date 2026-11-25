@@ -12,6 +12,7 @@ import { computeOpsMonthStats, formatWon } from "@/lib/opsMonthStats";
 import { usePinchZoom } from "@/lib/usePinchZoom";
 import OpsSkdPills from "./OpsSkdPills";
 import { resolvePairLabel, skdPillBoardingLinesDual } from "@/lib/shiftDisplay";
+import type { CalendarEventView } from "@/lib/eventStorage";
 
 interface Props {
   year: number;
@@ -29,11 +30,13 @@ interface Props {
   onToggleLeader?: (day: DaySchedule) => void;
   boardingDays?: DaySchedule[];
   showBoardingOverlay?: boolean;
+  /** 가져온 ICS 일정 (날짜 → 일정) */
+  eventsByDate?: Map<number, CalendarEventView[]>;
 }
 
 export default function IosMonthCalendar({
   year, month, days, selected, zoom = 1, onZoomChange, onSelect,   onEmptyDayClick, showOpsStats = false, leaderPickMode = false, onToggleLeader,
-  boardingDays = [], showBoardingOverlay = false,
+  boardingDays = [], showBoardingOverlay = false, eventsByDate,
 }: Props) {
   const now = new Date();
   const today = { year: now.getFullYear(), month: now.getMonth() + 1, day: now.getDate() };
@@ -104,6 +107,7 @@ export default function IosMonthCalendar({
                   ? resolvePairLabel(schedule, overlayBoarding)
                   : null;
                 const withOverlay = showBoardingOverlay && cell.inMonth;
+                const dayEvents = cell.inMonth ? eventsByDate?.get(cell.date) ?? [] : [];
                 const clickable = hasSkd || (cell.inMonth && !!onEmptyDayClick) || (leaderPickMode && cell.inMonth && !!schedule);
 
                 return (
@@ -135,6 +139,16 @@ export default function IosMonthCalendar({
                     <span className={`ios-day-num ${cell.isToday ? "today-num" : ""} ${schedule?.isLeader ? "is-leader" : ""}`}>
                       {schedule?.isLeader ? <span className="ios-day-leader" title="리더">👍</span> : null}
                       <span className="ios-day-num-text">{cell.date}</span>
+                      {dayEvents.length > 0 && (
+                        <span
+                          className="ios-day-ext-event"
+                          style={{ color: dayEvents[0].color }}
+                          title={dayEvents.map((e) => `${e.timeLabel} ${e.title}`).join(" / ")}
+                        >
+                          {dayEvents[0].icon}{dayEvents[0].allDay ? "" : dayEvents[0].timeLabel}
+                          {dayEvents.length > 1 ? `+${dayEvents.length - 1}` : ""}
+                        </span>
+                      )}
                     </span>
                     <div className={`ios-day-events ${boardingLayout ? "ios-day-events-boarding" : "ios-day-events-ops"} ${withOverlay ? `ios-day-events-overlay${pairLabel ? " has-pair" : " no-pair"}` : ""}`}>
                       {withOverlay ? (

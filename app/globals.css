@@ -2905,3 +2905,113 @@ body {
   color: #ff9500;
   font-weight: 800;
 }
+
+/* ---------- 가져온 ICS 일정 ---------- */
+.events-panel {
+  margin: 0 12px 10px;
+  padding: 10px 12px;
+  background: #1c1c1e;
+  border: 1px solid #2c2c2e;
+  border-radius: 12px;
+  color: #f2f2f7;
+  font-size: 13px;
+}
+.events-panel-head { display: flex; align-items: center; gap: 10px; }
+.events-panel-note { font-size: 11px; color: #8e8e93; }
+.events-panel-message {
+  margin: 8px 0 0;
+  padding: 8px;
+  background: #2c2c2e;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  font-family: inherit;
+  cursor: pointer;
+}
+.events-panel-empty { margin: 8px 0 0; font-size: 12px; color: #8e8e93; line-height: 1.5; }
+.events-panel-help { margin: 10px 0 0; font-size: 11px; color: #8e8e93; line-height: 1.5; }
+.events-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.events-cal-list, .events-month-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.events-cal-item { padding: 8px 0; border-top: 1px solid #2c2c2e; }
+.events-cal-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.events-cal-name { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.events-cal-count { margin-left: auto; font-size: 11px; color: #8e8e93; flex-shrink: 0; }
+.events-cal-actions { margin-top: 6px; flex-wrap: wrap; }
+.events-alarm { display: flex; align-items: center; gap: 4px; font-size: 12px; color: #c7c7cc; }
+.events-alarm select {
+  background: #2c2c2e;
+  color: #fff;
+  border: 1px solid #3a3a3c;
+  border-radius: 6px;
+  padding: 3px 4px;
+  font-size: 12px;
+}
+.events-month { margin-top: 10px; border-top: 1px solid #2c2c2e; padding-top: 8px; }
+.events-month-title { margin: 0; font-weight: 700; font-size: 13px; }
+.events-month-item { display: flex; align-items: flex-start; gap: 6px; padding: 4px 0; }
+.events-month-item .events-dot { margin-top: 5px; }
+.events-month-date { width: 40px; flex-shrink: 0; font-size: 12px; color: #c7c7cc; }
+.events-month-time { width: 36px; flex-shrink: 0; font-variant-numeric: tabular-nums; font-size: 12px; }
+.events-month-body { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.events-month-name { word-break: keep-all; overflow-wrap: anywhere; }
+.events-month-loc { font-size: 11px; color: #8e8e93; }
+.events-shift {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+.events-shift.working { background: #3a2a00; color: #ffcc00; }
+.events-shift.rest { background: #0f2e1a; color: #34c759; }
+
+.upcoming-banner {
+  margin: 0 12px 10px;
+  padding: 8px 10px;
+  background: #102a43;
+  border: 1px solid #1e4976;
+  border-radius: 10px;
+  color: #e6f0ff;
+  font-size: 13px;
+}
+.upcoming-item { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.upcoming-item + .upcoming-item { margin-top: 4px; }
+.upcoming-when { flex-shrink: 0; font-weight: 700; }
+.upcoming-title { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ios-day-ext-event {
+  margin-left: auto;
+  padding-right: 2px;
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-skd-events-title { color: #64d2ff; }
+.day-skd-event { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+.day-skd-event .events-dot { margin-top: 6px; }
+.day-skd-event-time { width: 38px; flex-shrink: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
+.day-skd-event-body { display: flex; flex-direction: column; min-width: 0; }
+.day-skd-event-title { font-weight: 600; }
+.day-skd-event-sub { font-size: 11px; color: #8e8e93; }
+.events-icon {
+  flex-shrink: 0;
+  font-size: 13px;
+  line-height: 1;
+  padding-bottom: 1px;
+  border-bottom: 2px solid transparent;
+}
+.events-icon-select {
+  background: #2c2c2e;
+  color: #fff;
+  border: 1px solid #3a3a3c;
+  border-left-width: 4px;
+  border-radius: 6px;
+  padding: 2px 2px;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.ios-day-ext-event { font-size: 9px; }
