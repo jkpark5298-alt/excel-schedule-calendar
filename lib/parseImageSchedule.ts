@@ -5,6 +5,23 @@ import { parsePdfText } from "@/lib/parsePdfSchedule";
 
 const DOW_KO = ["일", "월", "화", "수", "목", "금", "토"];
 
+/** OpenAI 이미지 인식 응답을 기다리는 최대 시간 (서버 함수 제한 120초 안쪽) */
+const OPENAI_TIMEOUT_MS = 80_000;
+/** 대체 OCR(Tesseract) 최대 시간 */
+const OCR_TIMEOUT_MS = 30_000;
+
+const NO_KEY_MESSAGE =
+  "이미지 근무표 인식에 필요한 OpenAI 키(OPENAI_API_KEY)가 서버에 설정되어 있지 않습니다. " +
+  "원본 Excel(.xlsx) 파일을 업로드하거나, Vercel 프로젝트 설정 → Environment Variables에 OPENAI_API_KEY를 등록한 뒤 다시 배포해 주세요.";
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 function dowForDate(year: number, month: number, date: number): string {
   return DOW_KO[new Date(year, month - 1, date).getDay()];
 }
@@ -161,7 +178,9 @@ async function parseWithOpenAI(
 - year=${year}, month=${month}, 이 달의 일수는 ${daysInMonth}일
 - 근무코드 예: 당, A, C, X, 휴, 休, 전, 연, 오프, 노고, 쥬, 사고(내), 교육, B7, A5, P, D, P6 등
 - "오프"는 휴무로 두고 shifts에 "오프" 원문 그대로 넣어도 됨
-- 워터마크("1 페이지" 등)와 오른쪽 합계/하단 메모는 무시
+- 워터마크("1 페이지" 등)와 오른쪽 합계(당직 등)/하단 메모·집계표는 무시
+- 1일 열 앞에 전월 말일 열(예: 30, 31)이 있으면 그 열은 무시하고 1일부터 담을 것
+- 셀 안의 작은 글씨(예: "유급조합")도 그 글자 그대로 넣을 것
 - 각 직원 shifts 배열 길이는 ${daysInMonth} (1일부터 순서대로). 비어 있으면 ""
 - 대상자 "${targetName}" 행이 반드시 포함되어야 합니다 (예: 김현숙). 영문 축약명·빈 칸 사람은 선택
 - 가능하면 다른 직원 행도 함께 포함 (동료 표시용)
@@ -173,8 +192,11 @@ async function parseWithOpenAI(
   ]
 }`;
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
+  let res: Response;
+  try {
+    res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
+    signal: AbortSignal.timeout(OPENAI_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
@@ -194,6 +216,14 @@ async function parseWithOpenAI(
       ],
     }),
   });
+  } catch (e) {
+    if (e instanceof Error && (e.name === "TimeoutError" || e.name === "AbortError")) {
+      throw new Error(
+        `OPENAI_TIMEOUT: 이미지 인식이 ${OPENAI_TIMEOUT_MS / 1000}초 안에 끝나지 않았습니다.`,
+      );
+    }
+    throw e;
+  }
 
   if (!res.ok) {
     const errText = await res.text().catch(() => "");
@@ -230,15 +260,13 @@ async function parseWithTesseract(
   }
 }
 
-function isQuotaOrAuthError(message: string): boolean {
-  return (
-    message.includes("OPENAI_429") ||
-    message.includes("NO_OPENAI_KEY") ||
-    /quota|billing|insufficient_quota|401|429/i.test(message)
-  );
-}
-
-/** 이미지 근무표 → ParsedSchedule (OpenAI Vision, 실패 시 Tesseract OCR) */
+/**
+ * 이미지 근무표 → ParsedSchedule
+ * 1) OpenAI Vision으로 인식한다.
+ * 2) 로컬 개발 환경에서만 Tesseract OCR로 한 번 더 시도한다.
+ *    (Vercel에서는 Tesseract 작업 파일을 찾지 못해 응답 없이 멈추므로 쓰지 않는다)
+ * 어떤 경우에도 서버 시간 제한(504) 전에 원인이 담긴 오류를 돌려준다.
+ */
 export async function parseScheduleImage(
   buffer: Buffer,
   mimeType: string,
@@ -246,30 +274,48 @@ export async function parseScheduleImage(
   year: number,
   month: number,
 ): Promise<ParsedSchedule> {
-  let openaiError: string | null = null;
+  let openaiError: string;
 
   try {
     return await parseWithOpenAI(buffer, mimeType, targetName, year, month);
   } catch (e) {
     openaiError = e instanceof Error ? e.message : String(e);
-    if (!isQuotaOrAuthError(openaiError) && !openaiError.startsWith("OPENAI_")) {
-      // Vision JSON parse failures: still try OCR fallback
-    }
+    console.error("OpenAI 이미지 인식 실패:", openaiError);
+  }
+
+  const reason = describeOpenAiError(openaiError);
+  if (process.env.VERCEL === "1") {
+    throw new Error(reason);
   }
 
   try {
-    return await parseWithTesseract(buffer, targetName, year, month);
+    return await withTimeout(
+      parseWithTesseract(buffer, targetName, year, month),
+      OCR_TIMEOUT_MS,
+      `대체 OCR이 ${OCR_TIMEOUT_MS / 1000}초 안에 끝나지 않았습니다.`,
+    );
   } catch (e) {
     const ocrError = e instanceof Error ? e.message : String(e);
-    if (openaiError && /429|quota|billing/i.test(openaiError)) {
-      throw new Error(
-        `OpenAI 사용량(쿼터)이 초과되어 이미지 고정밀 인식이 불가합니다. 대체 OCR도 실패했습니다: ${ocrError} Excel/PDF로 업로드하거나 OpenAI 결제(쿼터)를 충전한 뒤 다시 시도해 주세요.`,
-      );
-    }
-    throw new Error(
-      `이미지 근무표 인식에 실패했습니다. (${ocrError}) 선명한 PNG/JPG 또는 Excel/PDF를 사용해 주세요.`,
-    );
+    throw new Error(`${reason} (대체 OCR도 실패: ${ocrError})`);
   }
+}
+
+/** OpenAI 실패 원인을 사용자가 할 수 있는 조치와 함께 설명한다. */
+function describeOpenAiError(message: string): string {
+  if (message.includes("NO_OPENAI_KEY")) return NO_KEY_MESSAGE;
+  if (message.includes("OPENAI_TIMEOUT")) {
+    return "이미지 인식 시간이 너무 오래 걸렸습니다. 원본 Excel(.xlsx) 파일을 업로드하거나, 근무표 부분만 잘라서 다시 올려 주세요.";
+  }
+  if (/OPENAI_401|invalid_api_key|Incorrect API key/i.test(message)) {
+    return "서버에 등록된 OpenAI 키가 올바르지 않습니다. Vercel의 OPENAI_API_KEY 값을 확인해 주세요. (원본 Excel 업로드는 키 없이 됩니다)";
+  }
+  if (/OPENAI_429|quota|billing|insufficient_quota/i.test(message)) {
+    return "OpenAI 사용량(쿼터)이 초과되어 이미지 인식을 할 수 없습니다. OpenAI 결제를 확인하거나 원본 Excel(.xlsx) 파일을 업로드해 주세요.";
+  }
+  if (message.startsWith("OPENAI_")) {
+    return `OpenAI 이미지 인식 서버 오류입니다. 잠시 후 다시 시도하거나 원본 Excel(.xlsx) 파일을 업로드해 주세요. (${message.slice(0, 120)})`;
+  }
+  return `이미지에서 근무표를 읽지 못했습니다: ${message} 더 선명한 이미지나 원본 Excel(.xlsx) 파일을 올려 주세요.`;
 }
 
 export function isImageFileName(name: string): boolean {
