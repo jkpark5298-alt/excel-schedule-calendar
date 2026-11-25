@@ -3015,3 +3015,38 @@ body {
   flex-shrink: 0;
 }
 .ios-day-ext-event { font-size: 9px; }
+
+.events-panel-head { flex-wrap: wrap; gap: 6px; }
+.events-panel-note-row { margin: 6px 0 0; display: flex; align-items: center; gap: 10px; }
+.events-link-btn {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #64d2ff;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 0;
+}
+.events-link-btn:disabled { opacity: 0.5; }
+.events-add-form {
+  margin-top: 8px;
+  padding: 8px;
+  background: #2c2c2e;
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.events-add-form input {
+  flex: 1 1 140px;
+  min-width: 0;
+  background: #1c1c1e;
+  color: #fff;
+  border: 1px solid #3a3a3c;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 16px;
+}
+.events-form-help { flex-basis: 100%; margin: 2px 0 0; font-size: 11px; color: #8e8e93; line-height: 1.5; }
+.events-sync { margin: 4px 0 0; font-size: 11px; color: #8e8e93; overflow-wrap: anywhere; }
+.events-sync.error { color: #ff6961; }

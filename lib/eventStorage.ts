@@ -14,8 +14,17 @@ export interface ImportedCalendar {
   sourceFile?: string;
   /** 표시 아이콘 (⚽ 등). 없으면 이름·제목으로 추정 */
   icon?: string;
+  /** 구독(자동 갱신) 출처. 없으면 파일로 가져온 캘린더 */
+  source?: CalendarSource;
+  lastSyncedAt?: number;
+  lastSyncError?: string;
   events: ImportedEvent[];
 }
+
+export type CalendarSource =
+  | { kind: "url"; url: string }
+  /** 네이버 캘린더 등 CalDAV. 비밀번호는 이 기기 브라우저에만 저장 */
+  | { kind: "caldav"; server?: string; username: string; password: string; href: string };
 
 export const ICON_OPTIONS = ["⚽", "⚾", "🏀", "🏐", "⛳", "🎾", "🏃", "🎵", "✈️", "📅"];
 
@@ -88,10 +97,12 @@ export function upsertCalendar(
   name: string,
   events: ImportedEvent[],
   sourceFile?: string,
+  source?: CalendarSource,
 ): { next: ImportedCalendar[]; replaced: boolean } {
   const existing = calendars.find((c) => c.name === name);
+  const sync = source ? { source, lastSyncedAt: Date.now(), lastSyncError: undefined } : {};
   if (existing) {
-    const updated = { ...existing, events, importedAt: Date.now(), sourceFile };
+    const updated = { ...existing, events, importedAt: Date.now(), sourceFile, ...sync };
     return { next: calendars.map((c) => (c.id === existing.id ? updated : c)), replaced: true };
   }
   const used = new Set(calendars.map((c) => c.color));
@@ -100,6 +111,7 @@ export function upsertCalendar(
     id: `cal-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`,
     name, color, alarmMinutes: 60, importedAt: Date.now(), sourceFile, events,
     icon: guessIcon(name, events),
+    ...sync,
   };
   return { next: [...calendars, cal], replaced: false };
 }

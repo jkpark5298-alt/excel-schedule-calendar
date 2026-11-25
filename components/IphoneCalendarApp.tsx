@@ -24,6 +24,7 @@ import UpcomingEventsBanner from "./UpcomingEventsBanner";
 import {
   BACKUP_FIELD, ImportedCalendar, loadImportedCalendars, saveImportedCalendars,
 } from "@/lib/eventStorage";
+import { AUTO_SYNC_AGE_MS, refreshSubscriptions } from "@/lib/calendarSync";
 
 const OPS_TARGET = "박종규";
 
@@ -49,7 +50,17 @@ export default function IphoneCalendarApp() {
 
   useEffect(() => {
     void loadStoredCalendar().then(setStored);
-    setCalendars(loadImportedCalendars());
+    const loadedCalendars = loadImportedCalendars();
+    setCalendars(loadedCalendars);
+    // 구독 캘린더(주소·네이버)는 앱을 열 때 오래된 것만 조용히 갱신
+    void refreshSubscriptions(loadedCalendars, AUTO_SYNC_AGE_MS).then(({ next, refreshed, failed }) => {
+      if (refreshed + failed === 0) return;
+      setCalendars((prev) => {
+        const merged = prev.map((c) => next.find((n) => n.id === c.id && n.source) ?? c);
+        saveImportedCalendars(merged);
+        return merged;
+      });
+    }).catch(() => {});
     setLayoutMode(loadLayoutMode());
     setHydrated(true);
   }, []);
