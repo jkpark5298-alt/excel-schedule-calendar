@@ -120,16 +120,29 @@ async function main() {
   const res = await POST(new Request("http://local/api/parse-schedule", { method: "POST", body: fd }) as never);
   const data = (await res.json()) as {
     error?: string;
-    days?: Array<{ date: number; dayOfWeek: string; myShift: string; isLeader: boolean; allWorkers: unknown[] }>;
+    days?: Array<{
+      date: number;
+      dayOfWeek: string;
+      myShift: string;
+      isLeader: boolean;
+      sameShiftCoworkers: string[];
+      relatedCoworkers: { label: string; names: string[] } | null;
+    }>;
   };
   if (!res.ok || !data.days) fail(`앱이 이 엑셀을 읽지 못했습니다: ${data.error ?? res.status}`);
 
   console.log(`📄 엑셀 저장: ${outPath}`);
   console.log(`✅ 앱 업로드 검사 통과: ${target} ${year}년 ${month}월 ${data.days.length}일, 직원 ${input.rows.length}명`);
-  console.log(
-    `   ${target} 근무: ` +
-      data.days.map((d) => `${d.date}${d.myShift}${d.isLeader ? "★" : ""}`).join(" "),
-  );
+  console.log(`   ${target} 근무 (앱에 표시될 내용, ★=리더):`);
+  for (const d of data.days) {
+    const parts = [];
+    if (d.sameShiftCoworkers.length) parts.push(`같은 근무: ${d.sameShiftCoworkers.join(", ")}`);
+    if (d.relatedCoworkers) parts.push(`${d.relatedCoworkers.label}: ${d.relatedCoworkers.names.join(", ")}`);
+    console.log(
+      `   ${String(d.date).padStart(2)}일(${d.dayOfWeek}) ${d.myShift}${d.isLeader ? "★" : ""}` +
+        (parts.length ? `  ${parts.join(" / ")}` : ""),
+    );
+  }
 
   if (mismatches.length) {
     console.log(`\n⚠️ 집계표와 다른 날 ${mismatches.length}건 — 이미지를 다시 확인해야 합니다:`);
